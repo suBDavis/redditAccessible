@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+
+  "name": "RedditAccessible",
+  "description": "Allow Switch Usage of Reddit",
+  "version": "1.0",
+  "content_scripts": [
+    {
+      "matches": ["https://www.reddit.com/r/*"],
+      "js": ["content_script.js"]
+    }
+  ],
+  "background": {
+    "page": "background.html"
+  },
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "https://www.reddit.com/r/*"
+  ]
+}
