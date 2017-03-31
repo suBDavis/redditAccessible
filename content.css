@@ -1,0 +1,54 @@
+/*
+  Make links easier to look at
+*/
+.thing.link {
+  font-color: black;
+  border: 2px solid black;
+  border-radius: 8px;
+  background-color: white;
+  margin: 10px 0px;
+  padding: 10px;
+}
+.thing.link:hover {
+  color:white;
+  background-color: #bbadf3;
+}
+.link .entry .title a {
+  font-size: 20px;
+  font-color: black;
+}
+
+/*
+  Make this into a 2 column view.
+*/
+#siteTable.sitetable {
+  width: 40%;
+  float: left;
+}
+
+/*
+  Prev and next buttons
+*/
+.nextprev {
+  width: 100%;
+}
+.next-button {
+  width: 50%;
+  font-size: 20px;
+  margin: 10px 0px;
+  padding: 10px;
+}
+.prev-button {
+  width: 50%;
+  font-size: 20px;
+  margin: 10px 0px;
+  padding: 10px;
+}
+
+/*
+  My custom sections
+*/
+#acc_content {
+  width: 50%;
+  float: left;
+}
