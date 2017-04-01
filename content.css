@@ -1,6 +1,11 @@
 /*
   Make links easier to look at
 */
+body {
+  height: inherit;
+  min-height: 0px;
+  overflow-y: hidden;
+}
 .thing.link {
   font-color: black;
   border: 2px solid black;
@@ -8,10 +13,6 @@
   background-color: white;
   margin: 10px 0px;
   padding: 10px;
-}
-.thing.link:hover {
-  color:white;
-  background-color: #bbadf3;
 }
 .link .entry .title a {
   font-size: 20px;
@@ -24,43 +25,103 @@
 #siteTable.sitetable {
   width: 40%;
   float: left;
+  overflow-y: auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
 }
 
 /*
   Prev and next buttons
 */
 .nextprev {
+  display: block;
   width: 100%;
 }
-.next-button {
+.nextprev span {
+  display: inline-block;
   width: 50%;
+  margin: 0px;
+  padding: 0px;
   font-size: 20px;
-  margin: 10px 0px;
-  padding: 10px;
 }
-.prev-button {
-  width: 50%;
-  font-size: 20px;
-  margin: 10px 0px;
-  padding: 10px;
+.nextprev span a {
+  display: inline-block;
+  height: 1.2em;
+  width: 92%;
+  margin: 2% 0px;
+  padding: 10px 2%;
 }
 
 /*
   My custom sections
 */
-#acc_content {
+#acc_wrapper {
   width: 55%;
   margin-left: 41%;
-  font-size: 20px;
-  margin-top: 10px;
-  padding: 10px;
+  position: fixed;
+  height: 100%;
+}
+.acc {
+  padding: 1% 10px;
+  margin: 1% 10px;
   border: 2px solid black;
   border-radius: 8px;
-  position: fixed;
+  font-size: 20px;
+  overflow-y: auto;
 }
-#acc_content:hover {
-  background-color: #bbadf3;
+#acc_content {
+  height: 40%;
+  overflow-y: hidden;
 }
 #acc_content p{
   font-size: 16px;
+}
+#acc_content img{
+  height: 99%;
+}
+#acc_comments {
+  height: 42%; 
+}
+#acc_content_menu {
+  max-height: 8%;
+}
+.acc_menu_button {
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 8px;
+}
+.acc_comment {
+  background-color: #e5e5e5;
+  padding: 5px;
+  margin: 10px 0px;
+  border-radius: 8px;
+  border: 0px solid black;
+}
+.thing.link.acc_focused, .acc_focused {
+  background-color: #bbadf3;
+}
+/*
+Custom Scrolling
+*/
+::-webkit-scrollbar-track-piece{
+  background-color:#fff;
+  -webkit-border-radius:0;
+}
+::-webkit-scrollbar{
+  width:8px;
+  height:8px;
+}
+::-webkit-scrollbar-thumb{
+  height:50px;
+  background-color:#999;
+  -webkit-border-radius:4px;
+  outline:2px solid #fff;
+  outline-offset:-2px;
+  border: 2px solid #fff;
+}
+::-webkit-scrollbar-thumb:hover{
+  height:50px;
+  background-color:#9f9f9f;
+  -webkit-border-radius:4px;
 }

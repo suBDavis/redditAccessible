@@ -1,4 +1,4 @@
-var enabled = true;
+window.app_enabled = true;
 
 console.log("Init Background JS");
 
@@ -6,15 +6,14 @@ console.log("Init Background JS");
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.query == "checkEnabled"){
       console.log("Query done.");
-      sendResponse({enabled: enabled});  // don't allow this web page access
+      if (window.app_enabled)
+        chrome.tabs.insertCSS(sender.tab.id, {file:"content.css", runAt: "document_end"}, function(){});
+      sendResponse({enabled: window.app_enabled});  // don't allow this web page access
+    } else if (request.query == "toggleEnable") {
+      window.app_enabled = request.enabled;
+      sendResponse({enabled: window.app_enabled});
     } else {
       console.log("Uknown query");
-      sendResponse({enabled: false});
+      sendResponse({error: "unknown query"});
     }
   });
-
-// Allow the popup script to update my state.
-chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
-  enabled = message.enabled;
-  sendResponse({enabled: enabled});
-});

@@ -2,7 +2,11 @@ const BASEURL = "https://www.reddit.com/";
 const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 
-// Listen for messages from the pop up
+var Cursor = function(current){
+  this.current = current;
+}
+
+// Listen for messages from the pop up.
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     console.log(sender.tab ?
@@ -34,11 +38,13 @@ function main(){
 
 function init(){
   console.log("Initializing accessibleReddit...");
-  purge_unneeded();
-  var posts = $(".link");
-  var cursor = 0;
   var subreddit = get_subreddit();
+  purge_unneeded();
   add_custom_sections(subreddit);
+  var posts = $(".link");
+  var crsr = new Cursor(posts[0]);
+  setup_click_handlers(posts, subreddit, crsr);
+  var cursor = 0;
   show_details(subreddit, posts[0]);
 }
 
@@ -56,6 +62,7 @@ function purge_unneeded(){
   $(".domain").remove(); // in post
   $(".listing-chooser").remove(); // right gripper thing
   $(".organic-listing").remove(); // promoted links
+  $(".nextprev .separator").remove(); // stupid separator between 'prev' and 'next'
 
   var children = $(".nextprev").children('span');
   $(".nextprev").html(children); // text around next button
@@ -69,9 +76,38 @@ function get_subreddit(){
   return before_slash[0];
 }
 
+function setup_click_handlers(posts, subreddit, crsr){
+  console.log("Setup focus handlers");
+  $(posts).click(function(eventObject){
+    // add the hover class
+    $(crsr.current).removeClass("acc_focused");
+    crsr.current = eventObject.currentTarget;
+    $(eventObject.currentTarget).addClass("acc_focused");
+    show_details(subreddit, crsr.current);
+  });
+}
+
 function add_custom_sections(subreddit){
-  var content_section = "<div id='acc_content'>This is /r/"+subreddit+" - Content is loading</div>";
-  $("#siteTable").after(content_section);
+  /*
+    Pre-populates the page with the new DOM elements that this application needs.
+  */
+  var acc_wrapper = "<div id='acc_wrapper'></div>";
+  $("#siteTable").after(acc_wrapper);
+
+  var content_section = "<div id='acc_content' class='acc'>This is /r/"+subreddit+" - Content is loading</div>";
+  $("#acc_wrapper").append(content_section);
+  
+  var menu_section = "<div id='acc_content_menu' class='acc'> \
+      <button class='acc_menu_button' id='menuReadContent'>Read Post</button> \
+      <button class='acc_menu_button' id='menuReadComments'>Read Comments</button> \
+      <button class='acc_menu_button' id='menuGoBack'>Back to Posts</button> \
+    </div>";
+  $("#acc_wrapper").append(menu_section);
+
+  // TODO: Setup button focus handlers...
+  
+  var comment_section = "<div id='acc_comments' class='acc'>comments are loading...</div>";
+  $("#acc_wrapper").append(comment_section);
 }
 
 function replace_next_button(){
@@ -99,22 +135,46 @@ function show_details(subreddit, post){
       var html_post = data[0].data.children[0].data.selftext_html;
       console.log("text_post");
       $("#acc_content").html(decodeEntities(html_post));
+    } else if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
+      // IMAGE TYPE
+      var content_url = data[0].data.children[0].data.url;
+      var html_post = "<img src='"+content_url+"'><\/img>";
+      console.log("image post");
+      $("#acc_content").html(html_post);
+    } 
+
+    // load up to 10 top level comments
+    var comment_count = 0;
+    var length = Math.min(10, data[1].data.children.length);
+    if (length == 0)
+      $("#acc_comments").text("There are no comments.");
+    else
+      $("#acc_comments").html("<h2>Comments</h2>");
+    while (comment_count < length){
+      console.log("Displaying comment " + comment_count);
+      var html_comment = data[1].data.children[comment_count++].data.body_html;
+      html_comment = $(decodeEntities(html_comment)).addClass('acc_hoverable acc_comment')
+      $("#acc_comments").append(html_comment);
     }
   });
 
-  // load the content window.
+  // Backup in case the other code didn't load the content window.
   if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
     // IMAGE TYPE
-    console.log("Displaying IMAGE");
+    // DO NOTHING
   } else if (data_domain == "self."+subreddit){
     // COMMENT ajax handles this...
     // DO NOTHING
   } else {  
     // UNKNOWN TYPE - try to parse it with unfluff
   }
+
+  // Finally, focus the post...
+  $(post).focus();
 }
 
 function decodeEntities(encodedString) {
+    // takes an ascii-escaped string and converts it back to raw html.
     var textArea = document.createElement('textarea');
     textArea.innerHTML = encodedString;
     return textArea.value;

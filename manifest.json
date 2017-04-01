@@ -12,7 +12,7 @@
         "reddit.js",
         "content_script.js"
       ],
-      "css": ["content.css"],
+      // "css": ["content.css"],
       "run_at": "document_end"
     }
   ],
@@ -30,5 +30,6 @@
   ],
   "externally_connectable": {
     "matches": ["https://www.reddit.com/r/*"]
-  }
+  },
+  "web_accessible_resources": ["content.css"]
 }
