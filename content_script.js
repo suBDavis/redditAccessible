@@ -20,7 +20,7 @@ var Cursor = function(subreddit, posts){
   // Advance cursor to next element in the set.
   this.next = () => {
     if (this.index + 1 < this.posts.length ){
-      this.goto(this.posts[++this.index]);
+      this.goto(this.posts[this.index+1]);
     } else {
       // TODO: wrap around.
       // also logic for adding the buttons at the bottom.
@@ -30,6 +30,7 @@ var Cursor = function(subreddit, posts){
   this.goto = (post) => {
     $(this.current).removeClass("acc_focused");
     $(post).addClass("acc_focused");
+    this.index = $.inArray(post, this.posts);
     this.current = post;
     show_details(subreddit, this.current);
   }
@@ -94,6 +95,7 @@ function setup_click_handlers(posts, subreddit, crsr){
 }
 
 function setup_key_handlers(posts, subreddit, crsr){
+  console.log("Setup key handlers");
   $(window).keydown(function(eventData){
     if ( $.inArray(eventData.which, NEXT_SWITCH_KEYS) >= 0){
       // next
@@ -102,7 +104,6 @@ function setup_key_handlers(posts, subreddit, crsr){
       // select
       // TODO: implement the next context;
     }
-    console.log(eventData);
   });
 }
 
@@ -180,6 +181,10 @@ function show_details(subreddit, post){
       $("#acc_comments").append(html_comment);
     }
   });
+
+  var post_top = $(post).offset().top - 50;
+  var current_pos = $("#siteTable").scrollTop();
+  $("#siteTable").scrollTop(post_top + current_pos);
 }
 
 /*

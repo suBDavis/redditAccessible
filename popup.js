@@ -14,7 +14,7 @@ function toggle(){
 function send(message, callback){
   // First, update our internal state...
   chrome.runtime.sendMessage({query: "toggleEnable", enabled: message}, function(response) {
-    console.log("Enabled state " + response.enabled);
+    console.log("Enabled state " + response.app_enabled);
     callback();
   });
   // Now, tell the active tab to reload...

@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       sendResponse({enabled: window.app_enabled});  // don't allow this web page access
     } else if (request.query == "toggleEnable") {
       window.app_enabled = request.enabled;
-      sendResponse({enabled: window.app_enabled});
+      sendResponse({app_enabled: window.app_enabled});
     } else {
       console.log("Uknown query");
       sendResponse({error: "unknown query"});
