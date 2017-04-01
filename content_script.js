@@ -1,10 +1,39 @@
 const BASEURL = "https://www.reddit.com/";
 const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
+const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 
-main();
+// Listen for messages from the pop up
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.action == "start"){
+      //Start
+    }
+    if (request.action == "stop"){
+      //Stop
+    }
+    location.reload();
+    sendResponse({status: "thanks"});
+});
 
 function main(){
-  console.log("Initializing accessibleReddit");
+  console.log("Checking before startup...");
+  // Ask the background if the app is enabled...
+  chrome.runtime.sendMessage(APP_ID, {query: "checkEnabled"}, function(response) {
+    if (response.enabled){
+      console.log("Extension Enabled.");
+      init();
+    } else{
+      console.log(response);
+      console.log("Extension Disabled.");
+    }
+  });
+}
+
+function init(){
+  console.log("Initializing accessibleReddit...");
   purge_unneeded();
   var posts = $(".link");
   var cursor = 0;
@@ -90,3 +119,6 @@ function decodeEntities(encodedString) {
     textArea.innerHTML = encodedString;
     return textArea.value;
 }
+
+// Begin...
+main();

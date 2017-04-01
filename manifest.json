@@ -27,5 +27,8 @@
     "tabs",
     "activeTab",
     "https://www.reddit.com/r/*"
-  ]
+  ],
+  "externally_connectable": {
+    "matches": ["https://www.reddit.com/r/*"]
+  }
 }
