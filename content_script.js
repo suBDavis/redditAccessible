@@ -1,6 +1,7 @@
 const BASEURL = "https://www.reddit.com/";
 const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
 const IFRAME_DOMAINS = ['gfycat.com']; // for these urls, the page is good for IFRAME.
+const YOUTUBE_DOMAIN = ['youtube.com'];
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
@@ -33,22 +34,6 @@ var Cursor = function(subreddit, posts){
     show_details(subreddit, this.current);
   }
 }
-
-// Listen for messages from the pop up.
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    if (request.action == "start"){
-      //Start
-    }
-    if (request.action == "stop"){
-      //Stop
-    }
-    location.reload();
-    sendResponse({status: "thanks"});
-});
 
 function main(){
   console.log("Checking before startup...");
@@ -96,14 +81,6 @@ function purge_unneeded(){
   $(".nextprev").html(children); // text around next button
 }
 
-function get_subreddit(){
-  var url = window.location.pathname;
-  var after_r = url.split('/r/')[1];
-  var before_slash = after_r.split('/');
-  console.log("You are reading "+ before_slash[0]);
-  return before_slash[0];
-}
-
 function setup_click_handlers(posts, subreddit, crsr){
   console.log("Setup focus handlers");
   $(posts).click(function(eventObject){
@@ -111,6 +88,7 @@ function setup_click_handlers(posts, subreddit, crsr){
     crsr.goto(eventObject.currentTarget);
   });
 }
+
 function setup_key_handlers(posts, subreddit, crsr){
   $(window).keydown(function(eventData){
     if ( $.inArray(eventData.which, NEXT_SWITCH_KEYS) >= 0){
@@ -171,13 +149,18 @@ function show_details(subreddit, post){
       // IF TEXT POST, comment data will contain the text post as well...
       var html_post = data[0].data.children[0].data.selftext_html;
       $("#acc_content").html(decodeEntities(html_post));
+    
     } else if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
       // IMAGE TYPE
       console.log("Displaying IMAGE POST");
       var content_url = data[0].data.children[0].data.url;
       var html_post = "<img src='"+content_url+"'><\/img>";
       $("#acc_content").html(html_post);
-    } 
+    
+    } else {
+      var content_url = data[0].data.children[0].data.url;
+      $("#acc_content").html(handle_external_content(data_domain, content_url));
+    }
 
     // load up to 10 top level comments
     var comment_count = 0;
@@ -186,27 +169,47 @@ function show_details(subreddit, post){
       $("#acc_comments").text("There are no comments.");
     else
       $("#acc_comments").html("<h2>Comments</h2>");
+    
     while (comment_count < length){
       var html_comment = data[1].data.children[comment_count++].data.body_html;
       html_comment = $(decodeEntities(html_comment)).addClass('acc_hoverable acc_comment')
       $("#acc_comments").append(html_comment);
     }
   });
+}
 
-  // Backup in case the other code didn't load the content window.
-  if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
-    // IMAGE TYPE
-    // DO NOTHING
-  } else if (data_domain == "self."+subreddit){
-    // COMMENT ajax handles this...
-    // DO NOTHING
+/*
+  APP HELPERS
+*/
+
+function handle_external_content(content_domain, content_url){
+  // Returns HTML which should be dumped into the content window.
+
+  // YOUTUBE
+  if ( $.inArray(content_domain, YOUTUBE_DOMAIN) >= 0 ){
+    
+    var video_id = getParameterByName('v', content_url);
+    var embed = "<iframe id='ytplayer' type='text/html' width='100%' height='100%' \
+      src='https://www.youtube.com/embed/"+video_id+"?autoplay=1&origin=http://www.reddit.com' \
+      frameborder='0'></iframe>"
+    return embed;
+  
   } else {  
     // UNKNOWN TYPE - try to parse it with unfluff
   }
-
-  // Finally, focus the post...
-  $(post).focus();
 }
+
+function get_subreddit(){
+  var url = window.location.pathname;
+  var after_r = url.split('/r/')[1];
+  var before_slash = after_r.split('/');
+  console.log("You are reading "+ before_slash[0]);
+  return before_slash[0];
+}
+
+/* 
+  GENERAL HELPER FUNCTIONS
+*/
 
 function decodeEntities(encodedString) {
     // takes an ascii-escaped string and converts it back to raw html.
@@ -215,5 +218,35 @@ function decodeEntities(encodedString) {
     return textArea.value;
 }
 
+function getParameterByName(name, url) {
+    if (!url) {
+      url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+
 // Begin...
+
+// Listen for messages from the pop up.
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.action == "start"){
+      //Start
+    }
+    if (request.action == "stop"){
+      //Stop
+    }
+    location.reload();
+    sendResponse({status: "thanks"});
+});
+
 main();
