@@ -20,7 +20,13 @@ var Cursor = function(subreddit, posts){
   // Advance cursor to next element in the set.
   this.next = () => {
     if (this.index + 1 < this.posts.length ){
-      this.goto(this.posts[this.index+1]);
+      var pst = this.posts[this.index+1]
+      this.goto(pst);
+      var post_top = $(pst).offset().top - 50;
+      var current_pos = $("#siteTable").scrollTop();
+      $("#siteTable").animate({
+        scrollTop: post_top + current_pos
+        },500);
     } else {
       // TODO: wrap around.
       // also logic for adding the buttons at the bottom.
@@ -181,10 +187,6 @@ function show_details(subreddit, post){
       $("#acc_comments").append(html_comment);
     }
   });
-
-  var post_top = $(post).offset().top - 50;
-  var current_pos = $("#siteTable").scrollTop();
-  $("#siteTable").scrollTop(post_top + current_pos);
 }
 
 /*
