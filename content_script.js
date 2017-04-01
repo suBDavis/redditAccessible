@@ -1,16 +1,21 @@
+const BASEURL = "https://www.reddit.com/";
+const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
+
 main();
 
 function main(){
   console.log("Initializing accessibleReddit");
   purge_unneeded();
   var posts = $(".link");
-  add_custom_sections();
   var cursor = 0;
-  show_details(posts[0]);
+  var subreddit = get_subreddit();
+  add_custom_sections(subreddit);
+  show_details(subreddit, posts[0]);
 }
 
 function purge_unneeded(){
-  jQuery("#header").remove(); 
+  // Purge unneeded elements from the DOM
+  $("#header").remove(); 
   $(".side").remove();
   $(".footer-parent").remove();
   $(".thumbnail").remove(); //in post thumbnain
@@ -27,8 +32,16 @@ function purge_unneeded(){
   $(".nextprev").html(children); // text around next button
 }
 
-function add_custom_sections(){
-  var content_section = "<div id='acc_content'>WOOP</div>";
+function get_subreddit(){
+  var url = window.location.pathname;
+  var after_r = url.split('/r/')[1];
+  var before_slash = after_r.split('/');
+  console.log("You are reading "+ before_slash[0]);
+  return before_slash[0];
+}
+
+function add_custom_sections(subreddit){
+  var content_section = "<div id='acc_content'>This is /r/"+subreddit+" - Content is loading</div>";
   $("#siteTable").after(content_section);
 }
 
@@ -36,11 +49,44 @@ function replace_next_button(){
   // Returns a reference to the next button
 }
 
-function show_details(post){
+function show_details(subreddit, post){
   // Get post identifier...
   var post_id = $(post).attr("data-fullname");
-  console.log(post_id);
+  var data_domain = $(post).attr("data-domain");
+  post_id = post_id.substring(3);
+  console.log("Displaying " + post_id);
 
-  // load the comments async
-  
+  // load the comments 
+  var comment_url = "/r/" + subreddit + "/comments/" + post_id + ".json";
+  $.getJSON(comment_url, function(data){
+    // Data received...  display comments.
+    console.log(data);
+    
+    // load content window with self.text
+    if (data_domain == "self."+subreddit){
+      // TEXT TYPE
+      console.log("Displaying TEXT POST");
+      // IF TEXT POST, comment data will contain the text post as well...
+      var html_post = data[0].data.children[0].data.selftext_html;
+      console.log("text_post");
+      $("#acc_content").html(decodeEntities(html_post));
+    }
+  });
+
+  // load the content window.
+  if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
+    // IMAGE TYPE
+    console.log("Displaying IMAGE");
+  } else if (data_domain == "self."+subreddit){
+    // COMMENT ajax handles this...
+    // DO NOTHING
+  } else {  
+    // UNKNOWN TYPE - try to parse it with unfluff
+  }
+}
+
+function decodeEntities(encodedString) {
+    var textArea = document.createElement('textarea');
+    textArea.innerHTML = encodedString;
+    return textArea.value;
 }
