@@ -79,6 +79,10 @@ function purge_unneeded(){
 
   var children = $(".nextprev").children('span');
   $(".nextprev").html(children); // text around next button
+  $(".link .entry .title a").click(function(e){
+    // Disable all links. We aren't going to use them.
+    e.preventDefault();
+  })
 }
 
 function setup_click_handlers(posts, subreddit, crsr){
