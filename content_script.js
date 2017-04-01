@@ -1,9 +1,37 @@
 const BASEURL = "https://www.reddit.com/";
 const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
+const IFRAME_DOMAINS = ['gfycat.com']; // for these urls, the page is good for IFRAME.
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
+const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
+const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 
-var Cursor = function(current){
-  this.current = current;
+var Cursor = function(subreddit, posts){
+  /*
+    This is the cursor, and it handles state changes in the UI.  
+    No user-interaction UI changes should happen without going through the cursor.
+    TODO: Might need a context in the future for when "cursor.next" means different things to the UI
+  */
+  this.posts = posts;
+  this.index = 0;
+  if (posts.length > 0){
+    this.current = posts[0];
+  }
+  // Advance cursor to next element in the set.
+  this.next = () => {
+    if (this.index + 1 < this.posts.length ){
+      this.goto(this.posts[++this.index]);
+    } else {
+      // TODO: wrap around.
+      // also logic for adding the buttons at the bottom.
+    }
+  }
+  // Set cursor to specific element and display that element.
+  this.goto = (post) => {
+    $(this.current).removeClass("acc_focused");
+    $(post).addClass("acc_focused");
+    this.current = post;
+    show_details(subreddit, this.current);
+  }
 }
 
 // Listen for messages from the pop up.
@@ -42,10 +70,10 @@ function init(){
   purge_unneeded();
   add_custom_sections(subreddit);
   var posts = $(".link");
-  var crsr = new Cursor(posts[0]);
+  var crsr = new Cursor(subreddit, posts);
   setup_click_handlers(posts, subreddit, crsr);
-  var cursor = 0;
-  show_details(subreddit, posts[0]);
+  setup_key_handlers(posts, subreddit, crsr);
+  crsr.goto(posts[0]);
 }
 
 function purge_unneeded(){
@@ -80,10 +108,19 @@ function setup_click_handlers(posts, subreddit, crsr){
   console.log("Setup focus handlers");
   $(posts).click(function(eventObject){
     // add the hover class
-    $(crsr.current).removeClass("acc_focused");
-    crsr.current = eventObject.currentTarget;
-    $(eventObject.currentTarget).addClass("acc_focused");
-    show_details(subreddit, crsr.current);
+    crsr.goto(eventObject.currentTarget);
+  });
+}
+function setup_key_handlers(posts, subreddit, crsr){
+  $(window).keydown(function(eventData){
+    if ( $.inArray(eventData.which, NEXT_SWITCH_KEYS) >= 0){
+      // next
+      crsr.next();
+    } else if ($.inArray(eventData.which, SELECT_SWITCH_KEYS) >= 0) {
+      // select
+      // TODO: implement the next context;
+    }
+    console.log(eventData);
   });
 }
 
@@ -125,7 +162,7 @@ function show_details(subreddit, post){
   var comment_url = "/r/" + subreddit + "/comments/" + post_id + ".json";
   $.getJSON(comment_url, function(data){
     // Data received...  display comments.
-    console.log(data);
+    console.log("Comment JSON AJAX loaded...");
     
     // load content window with self.text
     if (data_domain == "self."+subreddit){
@@ -133,13 +170,12 @@ function show_details(subreddit, post){
       console.log("Displaying TEXT POST");
       // IF TEXT POST, comment data will contain the text post as well...
       var html_post = data[0].data.children[0].data.selftext_html;
-      console.log("text_post");
       $("#acc_content").html(decodeEntities(html_post));
     } else if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
       // IMAGE TYPE
+      console.log("Displaying IMAGE POST");
       var content_url = data[0].data.children[0].data.url;
       var html_post = "<img src='"+content_url+"'><\/img>";
-      console.log("image post");
       $("#acc_content").html(html_post);
     } 
 
@@ -151,7 +187,6 @@ function show_details(subreddit, post){
     else
       $("#acc_comments").html("<h2>Comments</h2>");
     while (comment_count < length){
-      console.log("Displaying comment " + comment_count);
       var html_comment = data[1].data.children[comment_count++].data.body_html;
       html_comment = $(decodeEntities(html_comment)).addClass('acc_hoverable acc_comment')
       $("#acc_comments").append(html_comment);
