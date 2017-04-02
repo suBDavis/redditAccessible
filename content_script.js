@@ -9,6 +9,7 @@ const IMGUR_DOMAINS = ["imgur.com"]; // IMGUR without extension...
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
+const BACK_KEYS = [38];
 
 var Cursor = function(subreddit, posts){
   /*
@@ -26,14 +27,19 @@ var Cursor = function(subreddit, posts){
     if (this.index + 1 < this.posts.length ){
       var pst = this.posts[this.index+1]
       this.goto(pst);
-      var post_top = $(pst).offset().top - 50;
-      var current_pos = $("#siteTable").scrollTop();
-      $("#siteTable").animate({
-        scrollTop: post_top + current_pos
-        },500);
+      this.scrollTo(pst);
     } else {
       // TODO: wrap around.
       // also logic for adding the buttons at the bottom.
+    }
+  }
+  this.previous = () => {
+    if (this.index - 1 >= 0 ){
+      var pst = this.posts[this.index-1]
+      this.goto(pst);
+      this.scrollTo(pst);
+    } else {
+      // TODO: wrap around...
     }
   }
   // Set cursor to specific element and display that element.
@@ -43,6 +49,14 @@ var Cursor = function(subreddit, posts){
     this.index = $.inArray(post, this.posts);
     this.current = post;
     show_details(subreddit, this.current);
+  }
+
+  this.scrollTo = (post) => {
+    var post_top = $(post).offset().top - 120;
+    var current_pos = $("#siteTable").scrollTop();
+    $("#siteTable").animate({
+        scrollTop: post_top + current_pos
+      },500);
   }
 }
 
@@ -113,6 +127,9 @@ function setup_key_handlers(posts, subreddit, crsr){
     } else if ($.inArray(eventData.which, SELECT_SWITCH_KEYS) >= 0) {
       // select
       // TODO: implement the next context;
+    } else if ($.inArray(eventData.which, BACK_KEYS) >= 0) {
+      // back...
+      crsr.previous();
     }
   });
 }
@@ -131,12 +148,13 @@ function add_custom_sections(subreddit){
       <button class='acc_menu_button' id='menuReadContent'>Read Post</button> \
       <button class='acc_menu_button' id='menuReadComments'>Read Comments</button> \
       <button class='acc_menu_button' id='menuGoBack'>Back to Posts</button> \
+      <button class='acc_menu_button' id='menuChangeSubreddit'>Choose another Subreddit</button> \
     </div>";
   $("#acc_wrapper").append(menu_section);
 
-  // TODO: Setup button focus handlers...
+  // TODO: Setup button select handlers.
   
-  var comment_section = "<div id='acc_comments' class='acc'>comments are loading...</div>";
+  var comment_section = "<div id='acc_comments' class='acc'><h1>Comments</h1>comments are loading...</div>";
   $("#acc_wrapper").append(comment_section);
 }
 
@@ -178,9 +196,9 @@ function show_details(subreddit, post){
     var comment_count = 0;
     var length = Math.min(10, data[1].data.children.length);
     if (length == 0)
-      $("#acc_comments").text("There are no comments.");
+      $("#acc_comments").html("<h1>Comments</h1>There are no comments.");
     else
-      $("#acc_comments").html("<h2>Comments</h2>");
+      $("#acc_comments").html("<h1>Comments</h1>");
     
     while (comment_count < length){
       var html_comment = data[1].data.children[comment_count++].data.body_html;
@@ -250,8 +268,6 @@ function handle_external_content(content_domain, content_url){
         $("#acc_content").html(data.html);
       }
     });
-  
-  // GIVE UP and IFRAME
   } else {
     return "<iframe type='text/html' height='100%' width='100%' frameborder='0' src='"+content_url+"'><\/iframe>";
   }

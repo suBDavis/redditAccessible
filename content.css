@@ -14,6 +14,9 @@ body .content {
 body .content .spacer {
   margin-bottom: 0px;
 }
+.thing.link .score {
+  color: #00183f;
+}
 .thing.link {
   font-color: black;
   border: 2px solid black;
@@ -27,7 +30,7 @@ body .content .spacer {
 }
 .link .entry .title a {
   font-size: 20px;
-  color: #031533;
+  color: #00183f;
 }
 
 /*
@@ -110,6 +113,10 @@ body .content .spacer {
   margin-bottom: 0px;
   padding: 0px 10px;
   height: 40vh; 
+}
+#acc_comments h1 {
+  font-weight: 700;
+  color: #369;
 }
 .acc_comment {
   background-color: #e5e5e5;
