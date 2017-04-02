@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log("Query done.");
       if (window.app_enabled)
         chrome.tabs.insertCSS(sender.tab.id, {file:"content.css", runAt: "document_end"}, function(){});
-      sendResponse({enabled: window.app_enabled});  // don't allow this web page access
+      sendResponse({app_enabled: window.app_enabled});  // don't allow this web page access
     } else if (request.query == "toggleEnable") {
       window.app_enabled = request.enabled;
       sendResponse({app_enabled: window.app_enabled});

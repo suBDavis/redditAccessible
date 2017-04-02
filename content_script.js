@@ -1,7 +1,9 @@
 const BASEURL = "https://www.reddit.com/";
 const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
+const IMAGE_EXTENSIONS = ["jpg","png","gif","jpeg"];
 const IFRAME_DOMAINS = ['gfycat.com']; // for these urls, the page is good for IFRAME.
 const YOUTUBE_DOMAIN = ['youtube.com'];
+const TWITTER_DOMAIN = ['twitter.com'];
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
@@ -46,7 +48,7 @@ function main(){
   console.log("Checking before startup...");
   // Ask the background if the app is enabled...
   chrome.runtime.sendMessage(APP_ID, {query: "checkEnabled"}, function(response) {
-    if (response.enabled){
+    if (response.app_enabled){
       console.log("Extension Enabled.");
       init();
     } else{
@@ -136,10 +138,6 @@ function add_custom_sections(subreddit){
   $("#acc_wrapper").append(comment_section);
 }
 
-function replace_next_button(){
-  // Returns a reference to the next button
-}
-
 function show_details(subreddit, post){
   // Get post identifier...
   var post_id = $(post).attr("data-fullname");
@@ -170,7 +168,7 @@ function show_details(subreddit, post){
     
     } else {
       var content_url = data[0].data.children[0].data.url;
-      $("#acc_content").html(handle_external_content(data_domain, content_url));
+      handle_external_content(data_domain, content_url);
     }
 
     // load up to 10 top level comments
@@ -200,13 +198,35 @@ function handle_external_content(content_domain, content_url){
   if ( $.inArray(content_domain, YOUTUBE_DOMAIN) >= 0 ){
     
     var video_id = getParameterByName('v', content_url);
-    var embed = "<iframe id='ytplayer' type='text/html' width='100%' height='100%' \
-      src='https://www.youtube.com/embed/"+video_id+"?autoplay=1&origin=http://www.reddit.com' \
-      frameborder='0'></iframe>"
-    return embed;
-  
-  } else {  
-    // UNKNOWN TYPE - try to parse it with unfluff
+    var embed = "<iframe id='ytplayer' type='text\/html' width='100%' height='100%' \
+      src='https:\/\/www.youtube.com/embed/"+video_id+"?autoplay=1&origin=http:\/\/www.reddit.com' \
+      frameborder='0'><\/iframe>";
+    $("#acc_content").html(embed);
+  } else if ($.inArray( content_url.substr(content_url.lastIndexOf('.')+1), IMAGE_EXTENSIONS ) >= 0) {  
+    // General Image Format...
+    $("#acc_content").html("<img src='"+content_url+"'><\/img>");
+  } else if ($.inArray(content_domain, TWITTER_DOMAIN)>=0){
+    // EMBEDDED TWEET
+    var twitter_oEmbed_url = "https://api.twitter.com/1.1/statuses/oembed.json?id=";
+    var href = url_to_a(content_url);
+    var tweet_id = href.pathname.substring(href.pathname.lastIndexOf('status\/')+7); // 7 for length of "status/"
+    if (tweet_id.indexOf("\/") >= 0)
+      tweet_id = tweet_id.substring(0, tweet_id.indexOf("\/"));
+    console.log("Fetching tweet " + tweet_id);
+
+    // Load the tweet from the oEmbed endpoint
+    $.ajax({
+      type: "GET",
+      url: twitter_oEmbed_url + tweet_id,
+      jsonCallback: "jsonp",
+      dataType: 'jsonp',
+      success: function(data){
+        $("#acc_content").html(data.html);
+      }
+    });
+  } else {
+    // GIVE UP and IFRAME
+    return "<iframe type='text/html' height='100%' width='100%' frameborder='0' src='"+content_url+"'><\/iframe>";
   }
 }
 
@@ -239,6 +259,11 @@ function getParameterByName(name, url) {
     if (!results) return null;
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+function url_to_a(url){
+  var l = document.createElement("a");
+  l.href = url;
+  return l;
 }
 
 
