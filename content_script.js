@@ -1,9 +1,11 @@
 const BASEURL = "https://www.reddit.com/";
-const IMAGE_DOMAINS = ["i.redd.it", 'i.imgur.com']; // the data domains that we can load as images.
+const REDDIT_IMAGE_DOMAINS = ["i.redd.it"]; // the data domains that we can load as images.
 const IMAGE_EXTENSIONS = ["jpg","png","gif","jpeg"];
+const VIDEO_EXTENSIONS = ["gifv", "webm", "mp4"];
 const IFRAME_DOMAINS = ['gfycat.com']; // for these urls, the page is good for IFRAME.
-const YOUTUBE_DOMAIN = ['youtube.com'];
-const TWITTER_DOMAIN = ['twitter.com'];
+const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be'];
+const TWITTER_DOMAINS = ['twitter.com'];
+const IMGUR_DOMAINS = ["imgur.com"]; // IMGUR without extension...
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
@@ -151,21 +153,22 @@ function show_details(subreddit, post){
     // Data received...  display comments.
     console.log("Comment JSON AJAX loaded...");
     
-    // load content window with self.text
+    // REDDIT TEXT TYPE
     if (data_domain == "self."+subreddit){
-      // TEXT TYPE
       console.log("Displaying TEXT POST");
       // IF TEXT POST, comment data will contain the text post as well...
       var html_post = data[0].data.children[0].data.selftext_html;
-      $("#acc_content").html(decodeEntities(html_post));
+      var decoded = decodeEntities(html_post);
+      $("#acc_content").html((decoded) ? decoded : "[EMPTY]");
     
-    } else if ( $.inArray(data_domain, IMAGE_DOMAINS) >= 0 ){
-      // IMAGE TYPE
+    // REDDIT IMAGE TYPE
+    } else if ( $.inArray(data_domain, REDDIT_IMAGE_DOMAINS) >= 0 ){
       console.log("Displaying IMAGE POST");
       var content_url = data[0].data.children[0].data.url;
       var html_post = "<img src='"+content_url+"'><\/img>";
       $("#acc_content").html(html_post);
     
+    // SOMETHING ELSE
     } else {
       var content_url = data[0].data.children[0].data.url;
       handle_external_content(data_domain, content_url);
@@ -193,20 +196,43 @@ function show_details(subreddit, post){
 
 function handle_external_content(content_domain, content_url){
   // Returns HTML which should be dumped into the content window.
+  var extension = content_url.substr(content_url.lastIndexOf('.')+1);
 
   // YOUTUBE
-  if ( $.inArray(content_domain, YOUTUBE_DOMAIN) >= 0 ){
-    
+  if ( $.inArray(content_domain, YOUTUBE_DOMAINS) >= 0 ){
     var video_id = getParameterByName('v', content_url);
+    if (content_domain == "youtu.be")
+      video_id = url_to_a(content_url).pathname;
     var embed = "<iframe id='ytplayer' type='text\/html' width='100%' height='100%' \
       src='https:\/\/www.youtube.com/embed/"+video_id+"?autoplay=1&origin=http:\/\/www.reddit.com' \
       frameborder='0'><\/iframe>";
     $("#acc_content").html(embed);
-  } else if ($.inArray( content_url.substr(content_url.lastIndexOf('.')+1), IMAGE_EXTENSIONS ) >= 0) {  
-    // General Image Format...
+  
+  // GENERAL IMAGE
+  } else if ($.inArray( extension, IMAGE_EXTENSIONS ) >= 0) {  
     $("#acc_content").html("<img src='"+content_url+"'><\/img>");
-  } else if ($.inArray(content_domain, TWITTER_DOMAIN)>=0){
-    // EMBEDDED TWEET
+  
+  // GENERAL VIDEO FORMAT
+  } else if ($.inArray( extension, VIDEO_EXTENSIONS ) >= 0) {
+    if (extension == 'gifv'){
+      extension = 'mp4';
+      content_url = content_url.substr(0, content_url.lastIndexOf('.')+1) + extension;
+      content_url = "http://" + content_url.substr(content_url.indexOf(':')+1); // rewrite to http
+    }
+    console.log("Video: " + content_url);
+    var embed = '<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: 100%;"> \
+        <source src="'+content_url+'" type="video/'+extension+'"></source> \
+      </video>';
+    $("#acc_content").html(embed);
+  
+  // IMGUR DOMAIN NO EXTENSION
+  } else if ($.inArray(content_domain, IMGUR_DOMAINS) >= 0 ) {
+    var post_id = url_to_a(content_url).pathname;
+    $("#acc_content").html("<img src='http://i.imgur.com/"+post_id+".gif'><\/img>"); // gif will always display.
+    // TODO: Embed album types...
+
+  // EMBEDDED TWEET
+  } else if ($.inArray(content_domain, TWITTER_DOMAINS) >= 0 ) {
     var twitter_oEmbed_url = "https://api.twitter.com/1.1/statuses/oembed.json?id=";
     var href = url_to_a(content_url);
     var tweet_id = href.pathname.substring(href.pathname.lastIndexOf('status\/')+7); // 7 for length of "status/"
@@ -224,8 +250,9 @@ function handle_external_content(content_domain, content_url){
         $("#acc_content").html(data.html);
       }
     });
+  
+  // GIVE UP and IFRAME
   } else {
-    // GIVE UP and IFRAME
     return "<iframe type='text/html' height='100%' width='100%' frameborder='0' src='"+content_url+"'><\/iframe>";
   }
 }
