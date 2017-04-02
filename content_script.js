@@ -47,7 +47,7 @@ var Cursor = function(subreddit, posts){
 function main(){
   console.log("Checking before startup...");
   // Ask the background if the app is enabled...
-  chrome.runtime.sendMessage(APP_ID, {query: "checkEnabled"}, function(response) {
+  chrome.runtime.sendMessage({query: "checkEnabled"}, function(response) {
     if (response.app_enabled){
       console.log("Extension Enabled.");
       init();
