@@ -1,26 +1,27 @@
 {
   "manifest_version": 2,
-
+  "version": "0.1.0",
   "name": "RedditAccessible",
-  "description": "Allow Switch Usage of Reddit",
-  "version": "1.0",
-  "content_scripts": [
-    {
+  "description": "Add accessibility features for reddit.com",
+  "icons": { 
+    "16": "img/icon16.png",
+    "48": "img/icon48.png",
+    "128": "img/icon128.png" 
+  },
+  "content_scripts": [{
       "matches": ["https://www.reddit.com/r/*"],
       "js": [
         "jquery.js", 
         "reddit.js",
         "content_script.js"
       ],
-      // "css": ["content.css"],
       "run_at": "document_end"
-    }
-  ],
+  }],
   "background": {
     "page": "background.html"
   },
   "browser_action": {
-    "default_icon": "popup.png",
+    "default_icon": "img/popup.png",
     "default_popup": "popup.html",
     "default_title": "Toggle RedditAccessible"
   },
