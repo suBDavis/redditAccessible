@@ -10,6 +10,48 @@ const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
+  
+/*
+  DEFINE OBJECTS
+*/
+
+var Item = function(obj){
+  /*
+    Abstract Class Item
+    Implements the following
+
+    focus()
+    unfocus()
+    select()
+  */
+  this.item = obj;
+};
+
+var PostItem = function(obj){
+  Item.call(obj);
+  this.focus = () => {
+
+  }
+  this.unfocus = () => {
+
+  }
+  this.select = () => {
+
+  }
+};
+
+var ButtonItem = function(obj, button_select_function){
+  Item.call(obj);
+  this.focus = () => {
+
+  }
+  this.unfocus = () => {
+
+  }
+  this.select = () => {
+    button_select_function();
+  }
+}
 
 var Cursor = function(subreddit, posts){
   /*
@@ -61,7 +103,15 @@ var Cursor = function(subreddit, posts){
   }
 }
 
+/*
+  MAIN APPLICATION LOGIC
+*/
+
 function main(){
+  // Setup inheritance
+  inheritsFrom(PostItem, Item);
+  inheritsFrom(ButtonItem, Item);
+
   console.log("Checking before startup...");
   // Ask the background if the app is enabled...
   chrome.runtime.sendMessage({query: "checkEnabled"}, function(response) {
@@ -299,6 +349,10 @@ function acc_speak(text){
   return msg;
 }
 
+function inheritsFrom(child, parent) {
+    child.prototype = Object.create(parent.prototype);
+};
+
 function decodeEntities(encodedString) {
     // takes an ascii-escaped string and converts it back to raw html.
     var textArea = document.createElement('textarea');
@@ -317,6 +371,7 @@ function getParameterByName(name, url) {
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
+
 function url_to_a(url){
   var l = document.createElement("a");
   l.href = url;
