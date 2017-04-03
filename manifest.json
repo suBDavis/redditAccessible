@@ -27,6 +27,7 @@
   "permissions": [
     "tabs",
     "activeTab",
+    "storage",
     "https://www.reddit.com/r/*"
   ],
   "externally_connectable": {
