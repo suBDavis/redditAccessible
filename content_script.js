@@ -2,9 +2,10 @@ const BASEURL = "https://www.reddit.com/";
 const REDDIT_IMAGE_DOMAINS = ["i.redd.it"]; // the data domains that we can load as images.
 const IMAGE_EXTENSIONS = ["jpg","png","gif","jpeg"];
 const VIDEO_EXTENSIONS = ["gifv", "webm", "mp4"];
-const IFRAME_DOMAINS = ['gfycat.com']; // for these urls, the page is good for IFRAME.
+const IFRAME_DOMAINS = []; // for these urls, the page is good for IFRAME.
 const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be'];
 const TWITTER_DOMAINS = ['twitter.com'];
+const GFYCAT_DOMAINS = ['gfycat.com'];
 const IMGUR_DOMAINS = ["imgur.com"]; // IMGUR without extension...
 const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
@@ -363,8 +364,20 @@ function handle_external_content(content_domain, content_url){
         $("#acc_content").html(data.html);
       }
     });
+
+  // GFYCAT
+  } else if ($.inArray(content_domain, GFYCAT_DOMAINS) >= 0) {
+    var path = url_to_a(content_url).pathname;
+    path = path.substring(1, path.length);
+    $("#acc_content").html("<div style='position:relative;padding-bottom:calc(100% / 1.85)'> \
+        <iframe src='https://gfycat.com/ifr/"+path+"' frameborder='0' scrolling='no' width='100%' height='100%' \
+        style='position:absolute;top:0;left:0;' allowfullscreen></iframe></div>"); 
+
+  // ACCEPTABLE IFRAME
+  } else if ($.inArray(content_domain, IFRAME_DOMAINS) >= 0) {
+    $("#acc_content").html("<iframe type='text/html' height='100%' width='100%' frameborder='0' scrolling='no' allowfullscreen src='"+content_url+"'><\/iframe>");
+  
   } else {
-    // $("#acc_content").html("<iframe type='text/html' height='100%' width='100%' frameborder='0' src='"+content_url+"'><\/iframe>");
     $("#acc_content").text("[Could not display content] " + content_url);
   }
 }
