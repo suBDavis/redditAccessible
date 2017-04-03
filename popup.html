@@ -4,7 +4,7 @@
   <script src="popup.js"></script>
   <style>
     button {
-      width: 140px;
+      width: 180px;
       padding: 10px;
       margin: 10px;
       border-radius: 10px;
@@ -14,15 +14,27 @@
       font-size: 18px;
     }
     button:hover {
-      background-color: #bbadf3;
+      background-color: #bad4ff;
+    }
+    h2 {
+      text-align: center;
+      font-size: 20px;
+      margin-top: 20px;
+    }
+    #snoo {
+      display: block;
+      margin-top: 20px;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
 <body>
   <h2>Accessible Reddit</h2>
   <button id="toggle">Disable</button>
-  <button id="changeSubreddit">Change Subreddit</button>
   <button id="toggleSpeech">Enable Speech</button>
+  <button id="changeSubreddit">Change Subreddit</button>
   <button id="tutorial">Tutorial</button>
+  <img id="snoo" width="64px" height="auto" src="snoo.png">
 </body>
 </html>
