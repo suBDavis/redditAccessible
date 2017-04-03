@@ -33,6 +33,8 @@ var PostItem = function(elem){
   this.focus = () => {
     scrollTo(this.elem, $("#siteTable"));
     $(this.elem).addClass("acc_focused");
+    var title = $(this.elem).find(".title a").first().text();
+    acc_speak(title);
     show_details(get_subreddit(), this);
   }
   this.unfocus = () => {
@@ -50,6 +52,7 @@ var ButtonItem = function(elem, button_select_function){
   this.focus = () => {
     scrollTo(this.elem, $("#siteTable"));
     $(this.elem).addClass("acc_focused");
+    acc_speak($(this.elem).text());
   }
   this.unfocus = () => {
     $(this.elem).removeClass("acc_focused");
@@ -208,6 +211,9 @@ function setup_key_handlers(posts, subreddit, crsr){
 }
 
 function setup_onscreen_buttons(crsr){
+  $(".next-button a").text("Next Page");
+  $(".prev-button a").text("Previous Page");
+  
   var nextbtn = new ButtonItem($(".next-button a").first(), (event)=>{
     console.log("selected next");
     window.location.href = $(".next-button a").first().attr('href');
@@ -259,7 +265,6 @@ function show_details(subreddit, item){
     // Data received...  display comments.
     var title = data[0].data.children[0].data.title;
     console.log("Comment JSON loaded... " + title);
-    acc_speak(title);
     
     // REDDIT TEXT TYPE
     if (data_domain == "self."+subreddit){
