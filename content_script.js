@@ -10,7 +10,7 @@ const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
-  
+
 /*
   DEFINE OBJECTS
 */
@@ -29,10 +29,8 @@ var Item = function(elem){
 
 var PostItem = function(elem){
   Item.call(this, elem);
-  console.log(elem);
-  console.log(this.elem);
+
   this.focus = () => {
-    console.log(this.elem);
     scrollTo(this.elem, $("#siteTable"));
     $(this.elem).addClass("acc_focused");
     show_details(get_subreddit(), this);
@@ -48,11 +46,13 @@ var PostItem = function(elem){
 
 var ButtonItem = function(elem, button_select_function){
   Item.call(this, elem);
-  this.focus = () => {
 
+  this.focus = () => {
+    scrollTo(this.elem, $("#siteTable"));
+    $(this.elem).addClass("acc_focused");
   }
   this.unfocus = () => {
-
+    $(this.elem).removeClass("acc_focused");
   }
   this.select = () => {
     button_select_function();
@@ -82,6 +82,7 @@ var Cursor = function(items){
       this.goto(this.items[0])
     }
   }
+  // Decrement the cursor
   this.previous = () => {
     if (this.index - 1 >= 0 ){
       var itm = this.items[this.index-1]
@@ -91,12 +92,24 @@ var Cursor = function(items){
       this.goto(this.items[this.items.length - 1]);
     }
   }
+  this.select = () => {
+    this.current.select();
+  }
   // Set cursor to specific element and display that element.
   this.goto = (item) => {
     this.current.unfocus();
     this.current = item;
     this.current.focus();
     this.index = $.inArray(item, this.items);
+  }
+  this.getItemByElem = (elem) => {
+    for (var i=0; i<this.items.length; i++)
+      if (elem == this.items[i].elem)
+        return this.items[i];
+    return null;
+  }
+  this.addItem = (item) => {
+    this.items.push(item);
   }
 }
 
@@ -140,6 +153,7 @@ function init(){
   var crsr = new Cursor(post_items);
   setup_click_handlers(posts, subreddit, crsr);
   setup_key_handlers(posts, subreddit, crsr);
+  setup_onscreen_buttons(crsr);
   crsr.goto(crsr.current);
 }
 
@@ -170,8 +184,10 @@ function purge_unneeded(){
 function setup_click_handlers(posts, subreddit, crsr){
   console.log("Setup focus handlers");
   $(posts).click(function(eventObject){
-    // add the hover class
-    crsr.goto(eventObject.currentTarget);
+    // get the item.
+    var elem = eventObject.currentTarget
+    var itm = crsr.getItemByElem(elem);
+    crsr.goto(itm);
   });
 }
 
@@ -183,12 +199,26 @@ function setup_key_handlers(posts, subreddit, crsr){
       crsr.next();
     } else if ($.inArray(eventData.which, SELECT_SWITCH_KEYS) >= 0) {
       // select
-      // TODO: implement the next context;
+      crsr.select();
     } else if ($.inArray(eventData.which, BACK_KEYS) >= 0) {
       // back...
       crsr.previous();
     }
   });
+}
+
+function setup_onscreen_buttons(crsr){
+  var nextbtn = new ButtonItem($(".next-button a").first(), (event)=>{
+    console.log("selected next");
+    window.location.href = $(".next-button a").first().attr('href');
+  });
+  var prevbtn = new ButtonItem($(".prev-button a").first(), (event)=>{
+    console.log("selected prev");
+    window.location.href = $(".prev-button a").first().attr('href');
+  });
+
+  crsr.addItem(prevbtn);
+  crsr.addItem(nextbtn);
 }
 
 function add_custom_sections(subreddit){

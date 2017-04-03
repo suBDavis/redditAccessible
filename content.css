@@ -24,7 +24,7 @@ body .content .spacer {
   background-color: white;
   margin-bottom: 20px;
   margin-top: 0px;
-  margin-left: 10px;
+  margin-left: 0px;
   margin-right: 0px;
   padding: 10px;
 }
@@ -37,7 +37,8 @@ body .content .spacer {
   Make this into a 2 column view.
 */
 #siteTable.sitetable {
-  width: 40%;
+  width: 39%;
+  margin-left: 1%;
   float: left;
   overflow-y: auto;
   position: absolute;
@@ -65,6 +66,8 @@ body .content .spacer {
   width: 92%;
   margin: 2% 0px;
   padding: 10px 2%;
+  border: 2px solid black;
+  border-radius: 8px;
 }
 
 /*
@@ -125,7 +128,7 @@ body .content .spacer {
   border-radius: 8px;
   border: 0px solid black;
 }
-.thing.link.acc_focused, .acc_focused {
+.thing.link.acc_focused, .acc_focused, .nextprev a.acc_focused {
   background-color: #bad4ff;
 }
 /*
