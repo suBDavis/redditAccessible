@@ -169,7 +169,10 @@ function show_details(subreddit, post){
   var comment_url = "/r/" + subreddit + "/comments/" + post_id + ".json";
   $.getJSON(comment_url, function(data){
     // Data received...  display comments.
-    console.log("Comment JSON AJAX loaded...");
+    var title = data[0].data.children[0].data.title;
+    console.log("Comment JSON loaded... " + title);
+
+    acc_speak(title);
     
     // REDDIT TEXT TYPE
     if (data_domain == "self."+subreddit){
@@ -284,6 +287,14 @@ function get_subreddit(){
 /* 
   GENERAL HELPER FUNCTIONS
 */
+function acc_speak(text){
+  chrome.runtime.sendMessage({query: "checkSpeech"}, function(response) {
+    if (response.speech_enabled){
+      var msg = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(msg);
+    }
+  });
+}
 
 function decodeEntities(encodedString) {
     // takes an ascii-escaped string and converts it back to raw html.
@@ -309,7 +320,6 @@ function url_to_a(url){
   return l;
 }
 
-
 // Begin...
 
 // Listen for messages from the pop up.
@@ -318,14 +328,12 @@ chrome.runtime.onMessage.addListener(
     console.log(sender.tab ?
                 "from a content script:" + sender.tab.url :
                 "from the extension");
-    if (request.action == "start"){
-      //Start
+    if (request.query == "reload"){
+      location.reload();
+      sendResponse({status: "thanks"});
+    } else {
+      sendResponse({status: "unknown"});
     }
-    if (request.action == "stop"){
-      //Stop
-    }
-    location.reload();
-    sendResponse({status: "thanks"});
 });
 
 main();
