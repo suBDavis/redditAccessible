@@ -15,7 +15,7 @@ const BACK_KEYS = [38];
   DEFINE OBJECTS
 */
 
-var Item = function(obj){
+var Item = function(elem){
   /*
     Abstract Class Item
     Implements the following
@@ -24,24 +24,30 @@ var Item = function(obj){
     unfocus()
     select()
   */
-  this.item = obj;
+  this.elem = elem;
 };
 
-var PostItem = function(obj){
-  Item.call(obj);
+var PostItem = function(elem){
+  Item.call(this, elem);
+  console.log(elem);
+  console.log(this.elem);
   this.focus = () => {
-
+    console.log(this.elem);
+    scrollTo(this.elem, $("#siteTable"));
+    $(this.elem).addClass("acc_focused");
+    show_details(get_subreddit(), this);
   }
   this.unfocus = () => {
-
+    $(this.elem).removeClass("acc_focused");
+    window.speechSynthesis.cancel();
   }
   this.select = () => {
-
+    // What to do when we press enter....
   }
 };
 
-var ButtonItem = function(obj, button_select_function){
-  Item.call(obj);
+var ButtonItem = function(elem, button_select_function){
+  Item.call(this, elem);
   this.focus = () => {
 
   }
@@ -53,53 +59,44 @@ var ButtonItem = function(obj, button_select_function){
   }
 }
 
-var Cursor = function(subreddit, posts){
+var Cursor = function(items){
   /*
     This is the cursor, and it handles state changes in the UI.  
     No user-interaction UI changes should happen without going through the cursor.
     TODO: Might need a context in the future for when "cursor.next" means different things to the UI
   */
-  this.posts = posts;
+  this.items = items;
   this.index = 0;
-  if (posts.length > 0){
-    this.current = posts[0];
+  if (items.length > 0){
+    this.current = items[0];
   }
   // Advance cursor to next element in the set.
   this.next = () => {
-    if (this.index + 1 < this.posts.length ){
-      var pst = this.posts[this.index+1]
-      this.goto(pst);
-      this.scrollTo(pst);
-    } else {
+    if (this.index + 1 < this.items.length ){
+      var itm = this.items[this.index+1]
+      this.goto(itm);
+      
+    } else if ( this.items.length > 0 ) {
       // TODO: wrap around.
       // also logic for adding the buttons at the bottom.
+      this.goto(this.items[0])
     }
   }
   this.previous = () => {
     if (this.index - 1 >= 0 ){
-      var pst = this.posts[this.index-1]
-      this.goto(pst);
-      this.scrollTo(pst);
-    } else {
-      // TODO: wrap around...
+      var itm = this.items[this.index-1]
+      this.goto(itm);
+
+    } else if ( this.items.length > 0 ) {
+      this.goto(this.items[this.items.length - 1]);
     }
   }
   // Set cursor to specific element and display that element.
-  this.goto = (post) => {
-    $(this.current).removeClass("acc_focused");
-    $(post).addClass("acc_focused");
-    this.index = $.inArray(post, this.posts);
-    this.current = post;
-    window.speechSynthesis.cancel();
-    show_details(subreddit, this);
-  }
-
-  this.scrollTo = (post) => {
-    var post_top = $(post).offset().top - 120;
-    var current_pos = $("#siteTable").scrollTop();
-    $("#siteTable").animate({
-        scrollTop: post_top + current_pos
-      },500);
+  this.goto = (item) => {
+    this.current.unfocus();
+    this.current = item;
+    this.current.focus();
+    this.index = $.inArray(item, this.items);
   }
 }
 
@@ -128,13 +125,22 @@ function main(){
 function init(){
   console.log("Initializing accessibleReddit...");
   var subreddit = get_subreddit();
+  
+  // Modify page CSS
   purge_unneeded();
   add_custom_sections(subreddit);
+  
+  // Parse posts.
   var posts = $(".link");
-  var crsr = new Cursor(subreddit, posts);
+  var post_items = [];
+  for (var i = 0; i < posts.length; i++)
+    post_items.push(new PostItem(posts[i]));
+
+  // Setup nagivation handlers.
+  var crsr = new Cursor(post_items);
   setup_click_handlers(posts, subreddit, crsr);
   setup_key_handlers(posts, subreddit, crsr);
-  crsr.goto(posts[0]);
+  crsr.goto(crsr.current);
 }
 
 function purge_unneeded(){
@@ -209,8 +215,8 @@ function add_custom_sections(subreddit){
   $("#acc_wrapper").append(comment_section);
 }
 
-function show_details(subreddit, cursor){
-  var post = cursor.current;
+function show_details(subreddit, item){
+  var post = item.elem;
   // Get post identifier...
   var post_id = $(post).attr("data-fullname");
   var data_domain = $(post).attr("data-domain");
@@ -223,8 +229,7 @@ function show_details(subreddit, cursor){
     // Data received...  display comments.
     var title = data[0].data.children[0].data.title;
     console.log("Comment JSON loaded... " + title);
-
-    cursor.speech = acc_speak(title);
+    acc_speak(title);
     
     // REDDIT TEXT TYPE
     if (data_domain == "self."+subreddit){
@@ -232,7 +237,7 @@ function show_details(subreddit, cursor){
       // IF TEXT POST, comment data will contain the text post as well...
       var html_post = data[0].data.children[0].data.selftext_html;
       var decoded = decodeEntities(html_post);
-      $("#acc_content").html((decoded) ? decoded : "[EMPTY]");
+      $("#acc_content").html((decoded) ? decoded : "[EMPTY - no content body]");
     
     // REDDIT IMAGE TYPE
     } else if ( $.inArray(data_domain, REDDIT_IMAGE_DOMAINS) >= 0 ){
@@ -324,7 +329,8 @@ function handle_external_content(content_domain, content_url){
       }
     });
   } else {
-    return "<iframe type='text/html' height='100%' width='100%' frameborder='0' src='"+content_url+"'><\/iframe>";
+    // $("#acc_content").html("<iframe type='text/html' height='100%' width='100%' frameborder='0' src='"+content_url+"'><\/iframe>");
+    $("#acc_content").text("[Could not display content] " + content_url);
   }
 }
 
@@ -347,6 +353,15 @@ function acc_speak(text){
     }
   });
   return msg;
+}
+
+function scrollTo(elem, parent_container) {
+  // takes 2 items, scrolls the parent to elem
+  var elem_top = $(elem).offset().top - 120;
+  var current_pos = $(parent_container).scrollTop();
+  $(parent_container).animate({
+      scrollTop: elem_top + current_pos
+    },500);
 }
 
 function inheritsFrom(child, parent) {
