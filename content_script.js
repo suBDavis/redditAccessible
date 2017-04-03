@@ -48,7 +48,8 @@ var Cursor = function(subreddit, posts){
     $(post).addClass("acc_focused");
     this.index = $.inArray(post, this.posts);
     this.current = post;
-    show_details(subreddit, this.current);
+    window.speechSynthesis.cancel();
+    show_details(subreddit, this);
   }
 
   this.scrollTo = (post) => {
@@ -158,7 +159,8 @@ function add_custom_sections(subreddit){
   $("#acc_wrapper").append(comment_section);
 }
 
-function show_details(subreddit, post){
+function show_details(subreddit, cursor){
+  var post = cursor.current;
   // Get post identifier...
   var post_id = $(post).attr("data-fullname");
   var data_domain = $(post).attr("data-domain");
@@ -172,7 +174,7 @@ function show_details(subreddit, post){
     var title = data[0].data.children[0].data.title;
     console.log("Comment JSON loaded... " + title);
 
-    acc_speak(title);
+    cursor.speech = acc_speak(title);
     
     // REDDIT TEXT TYPE
     if (data_domain == "self."+subreddit){
@@ -288,12 +290,13 @@ function get_subreddit(){
   GENERAL HELPER FUNCTIONS
 */
 function acc_speak(text){
+  var msg = new SpeechSynthesisUtterance(text);
   chrome.runtime.sendMessage({query: "checkSpeech"}, function(response) {
     if (response.speech_enabled){
-      var msg = new SpeechSynthesisUtterance(text);
       window.speechSynthesis.speak(msg);
     }
   });
+  return msg;
 }
 
 function decodeEntities(encodedString) {
