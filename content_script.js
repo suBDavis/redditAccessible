@@ -12,6 +12,9 @@ const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
 
+// The only global variable...
+window.cursor = null;
+
 /*
   DEFINE OBJECTS
 */
@@ -31,8 +34,8 @@ var Item = function(elem){
 var PostItem = function(elem){
   Item.call(this, elem);
 
-  this.focus = () => {
-    scrollTo(this.elem, $("#siteTable"));
+  this.focus = (container) => {
+    scrollTo(this.elem, container);
     $(this.elem).addClass("acc_focused");
     var title = $(this.elem).find(".title a").first().text();
     acc_speak(title);
@@ -43,7 +46,7 @@ var PostItem = function(elem){
     window.speechSynthesis.cancel();
   }
   this.select = () => {
-    // What to do when we press enter....
+    // POST ITEM has no select functionality.
   }
   this.show_details = () => {
     var post = this.elem;
@@ -175,12 +178,13 @@ var PostItem = function(elem){
 var ButtonItem = function(elem, button_select_function){
   Item.call(this, elem);
 
-  this.focus = () => {
-    scrollTo(this.elem, $("#siteTable"));
+  this.focus = (container) => {
+    scrollTo(this.elem, container);
     $(this.elem).addClass("acc_focused");
     acc_speak($(this.elem).text());
   }
   this.unfocus = () => {
+    window.speechSynthesis.cancel();
     $(this.elem).removeClass("acc_focused");
   }
   this.select = () => {
@@ -188,7 +192,7 @@ var ButtonItem = function(elem, button_select_function){
   }
 }
 
-var Context = function(parent, items){
+var Context = function(parent, items, container){
   /*
     This is a context, which is an element where
     a set of iterable items are contained..
@@ -201,6 +205,7 @@ var Context = function(parent, items){
     - next()
     - previous()
   */
+  this.container = container;
   this.parent = parent;
   this.items = items;
   this.index = 0;
@@ -230,17 +235,26 @@ var Context = function(parent, items){
     }
   }
   this.select = () => {
+    // because JS has no method override...
+    if (typeof this.unique_handle_select === "function")
+      this.unique_handle_select();
     this.current.select();
+  }
+  this.ascend = () => {
+    // Swap back to parent context.
+    window.cursor.switch_context(this.parent);
+    this.current.unfocus();
+    this.parent.goto(this.parent.current);
   }
   this.goto = (item) => {
     this.current.unfocus();
     this.current = item;
-    this.current.focus();
+    this.current.focus(this.container);
     this.index = $.inArray(item, this.items);
   }
   this.getItemByElem = (elem) => {
     for (var i=0; i<this.items.length; i++)
-      if (elem == this.items[i].elem)
+      if ($(elem).attr('id') == $(this.items[i].elem).attr('id'))
         return this.items[i];
     return null;
   }
@@ -255,8 +269,10 @@ var Context = function(parent, items){
       $(this.items[i].elem).off('click');
       $(this.items[i].elem).click((eventObject) => {
         // get the item.
-        var elem = eventObject.currentTarget
+        var elem = eventObject.currentTarget;
+        console.log(elem);
         var itm = this.getItemByElem(elem);
+        console.log(itm);
         this.goto(itm);
       });
     }
@@ -264,9 +280,18 @@ var Context = function(parent, items){
   this.setup_click_handers();
 }
 
-var PostContext = function(parent, items){
+var PostContext = function(parent, items, container){
+
+  this.unique_handle_select = () => {
+    this.current.unfocus();
+    if ( $(this.current.elem).hasClass('link') ){
+      window.cursor.switch_context(this.menu_subcontext);
+      this.menu_subcontext.goto(this.menu_subcontext.items[0]);
+    }
+  }
+
   // Do a few more things before calling the constructor.
-  Context.call(this, parent, items);
+  Context.call(this, parent, items, container);
 
   // SET UP OTHER BUTTON HANDLERS
   (() => { 
@@ -315,7 +340,7 @@ var PostContext = function(parent, items){
   //Pre-populates the page with the new DOM elements that this application needs.
   ((subreddit) => {
     var acc_wrapper = "<div id='acc_wrapper'></div>";
-    $("#siteTable").after(acc_wrapper);
+    $(this.container).after(acc_wrapper);
 
     var content_section = "<div id='acc_content' class='acc'>This is /r/"+subreddit+" - Content is loading</div>";
     $("#acc_wrapper").append(content_section);
@@ -327,12 +352,31 @@ var PostContext = function(parent, items){
         <button class='acc_menu_button' id='menuChangeSubreddit'>Change Subreddit</button> \
       </div>";
     $("#acc_wrapper").append(menu_section);
+    this.menu_subcontext = new PostMenuContext(this, [], $("#acc_content_menu").first());
     
     var comment_section = "<div id='acc_comments' class='acc'><h1>Comments</h1>comments are loading...</div>";
     $("#acc_wrapper").append(comment_section);
   })(get_subreddit());
 
-  this.setup_click_handers();
+  this.setup_click_handers(); // Do this again, since there are new items that need click handlers...
+}
+
+var PostMenuContext = function(parent, items, container){
+  // Do a few more things before calling the constructor.
+
+  this.unique_handle_select = () => {
+    return false;
+  }
+  
+  var items = [
+    new ButtonItem($("#menuReadContent"), (event)=>{}),
+    new ButtonItem($("#menuReadComments"), (event)=>{}),
+    new ButtonItem($("#menuGoBack"), (event)=>{
+      this.ascend();
+    }),
+    new ButtonItem($("#menuChangeSubreddit"), (event)=>{})
+  ];
+  Context.call(this, parent, items, container);
 }
 
 var Cursor = function(context){
@@ -341,10 +385,16 @@ var Cursor = function(context){
     No user-interaction UI changes should happen without going through the cursor.
     This exists to avoid globals and allow a single object to be passed around for UI changes.
   */
-  this.current_context = context;
-  this.next = this.current_context.next;
-  this.previous = this.current_context.previous;
-  this.select = this.current_context.select;
+
+  this.switch_context = (new_context) => {
+    this.current_context = new_context;
+    this.next = this.current_context.next;
+    this.previous = this.current_context.previous;
+    this.select = this.current_context.select;
+  }
+
+  // Switch to the constructor context.
+  this.switch_context(context);
 
   // SETUP KEY HANDLERS - GLOBALLY NEEDED
   ((subreddit) => {
@@ -362,6 +412,7 @@ var Cursor = function(context){
       }
     });
   })(get_subreddit());
+
 }
 
 /*
@@ -395,8 +446,8 @@ function init(){
   for (var i = 0; i < posts.length; i++)
     post_items.push(new PostItem(posts[i]));
   // Setup nagivation handlers.
-  var ctx = new PostContext(null, post_items);
-  var crsr = new Cursor(ctx);
+  var ctx = new PostContext(null, post_items, $("#siteTable"));
+  window.cursor = new Cursor(ctx);
   ctx.goto(ctx.current);
 }
 
