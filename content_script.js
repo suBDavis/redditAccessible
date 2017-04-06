@@ -6,13 +6,12 @@ const IFRAME_DOMAINS = ['flic.kr', 'flickr.com']; // for these urls, the page is
 const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be'];
 const TWITTER_DOMAINS = ['twitter.com'];
 const GFYCAT_DOMAINS = ['gfycat.com'];
-const IMGUR_DOMAINS = ["imgur.com"]; // IMGUR without extension...
-const APP_ID = "jpahcocjpdmokcdkemanckhmkjbpcegb";
+const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
 
-// The only global variable...
+// The only global variable!!!
 window.cursor = null;
 
 /*
@@ -55,18 +54,18 @@ var PostItem = function(elem){
     var post_id = $(post).attr("data-fullname");
     var data_domain = $(post).attr("data-domain");
     post_id = post_id.substring(3);
-    console.log("Displaying " + post_id);
+    console.debug("Displaying " + post_id);
 
     // load the comments 
     var comment_url = "/r/" + subreddit + "/comments/" + post_id + ".json";
     $.getJSON(comment_url, (data) => {
       // Data received...  display comments.
       var title = data[0].data.children[0].data.title;
-      console.log("Comment JSON loaded... " + title);
+      console.debug("Comment JSON loaded... " + title);
       
       // REDDIT TEXT TYPE
       if (data_domain == "self."+subreddit){
-        console.log("Displaying TEXT POST");
+        console.debug("Displaying TEXT POST");
         // IF TEXT POST, comment data will contain the text post as well...
         var html_post = data[0].data.children[0].data.selftext_html;
         var decoded = decodeEntities(html_post);
@@ -74,7 +73,7 @@ var PostItem = function(elem){
       
       // REDDIT IMAGE TYPE
       } else if ( $.inArray(data_domain, REDDIT_IMAGE_DOMAINS) >= 0 ){
-        console.log("Displaying IMAGE POST");
+        console.debug("Displaying IMAGE POST");
         var content_url = data[0].data.children[0].data.url;
         var html_post = "<img src='"+content_url+"'><\/img>";
         $("#acc_content").html(html_post);
@@ -125,7 +124,7 @@ var PostItem = function(elem){
         content_url = content_url.substr(0, content_url.lastIndexOf('.')+1) + extension;
         content_url = "http://" + content_url.substr(content_url.indexOf(':')+1); // rewrite to http
       }
-      console.log("Video: " + content_url);
+      console.debug("Video: " + content_url);
       var embed = '<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: 100%;"> \
           <source src="'+content_url+'" type="video/'+extension+'"></source> \
         </video>';
@@ -144,7 +143,7 @@ var PostItem = function(elem){
       var tweet_id = href.pathname.substring(href.pathname.lastIndexOf('status\/')+7); // 7 for length of "status/"
       if (tweet_id.indexOf("\/") >= 0)
         tweet_id = tweet_id.substring(0, tweet_id.indexOf("\/"));
-      console.log("Fetching tweet " + tweet_id);
+      console.debug("Fetching tweet " + tweet_id);
 
       // Load the tweet from the oEmbed endpoint
       $.ajax({
@@ -170,14 +169,13 @@ var PostItem = function(elem){
       $("#acc_content").html("<iframe type='text/html' height='100%' width='100%' frameborder='0' scrolling='no' allowfullscreen src='"+content_url+"'><\/iframe>");
     
     } else {
-      $("#acc_content").text("[Could not display content] " + content_url);
+      $("#acc_content").html("<p>[Could not display content] <\/p>" + content_url);
     }
   }
 };
 
-var ButtonItem = function(elem, button_select_function){
+var GenericItem = function(elem, generic_select_function){
   Item.call(this, elem);
-
   this.focus = (container) => {
     scrollTo(this.elem, container);
     $(this.elem).addClass("acc_focused");
@@ -188,7 +186,7 @@ var ButtonItem = function(elem, button_select_function){
     $(this.elem).removeClass("acc_focused");
   }
   this.select = () => {
-    button_select_function();
+    generic_select_function();
   }
 }
 
@@ -215,19 +213,19 @@ var Context = function(parent, items, container){
 
   this.next = () => {
     if (this.index + 1 < this.items.length ){
-      var itm = this.items[this.index+1]
+      var itm = this.items[this.index+1];
       this.goto(itm);
       
     } else if ( this.items.length > 0 ) {
       // TODO: wrap around.
       // also logic for adding the buttons at the bottom.
-      this.goto(this.items[0])
+      this.goto(this.items[0]);
     }
   }
   // Decrement the cursor
   this.previous = () => {
     if (this.index - 1 >= 0 ){
-      var itm = this.items[this.index-1]
+      var itm = this.items[this.index-1];
       this.goto(itm);
 
     } else if ( this.items.length > 0 ) {
@@ -264,15 +262,13 @@ var Context = function(parent, items, container){
 
   // SETUP CLICK HANDLERS FOR GENERAL OBJECTS
   this.setup_click_handers = () => {
-    console.log("Setup click handlers");
+    console.debug("Setup click handlers");
     for (var i =0; i < this.items.length; i++){ 
       $(this.items[i].elem).off('click');
       $(this.items[i].elem).click((eventObject) => {
         // get the item.
         var elem = eventObject.currentTarget;
-        console.log(elem);
         var itm = this.getItemByElem(elem);
-        console.log(itm);
         this.goto(itm);
       });
     }
@@ -298,12 +294,12 @@ var PostContext = function(parent, items, container){
     $(".next-button a").text("Next Page");
     $(".prev-button a").text("Previous Page");
     
-    var nextbtn = new ButtonItem($(".next-button a").get(0), (event)=>{
-      console.log("selected next");
+    var nextbtn = new GenericItem($(".next-button a").get(0), (event)=>{
+      console.debug("selected next");
       window.location.href = $(".next-button a").first().attr('href');
     });
-    var prevbtn = new ButtonItem($(".prev-button a").get(0), (event)=>{
-      console.log("selected prev");
+    var prevbtn = new GenericItem($(".prev-button a").get(0), (event)=>{
+      console.debug("selected prev");
       window.location.href = $(".prev-button a").first().attr('href');
     });
 
@@ -346,9 +342,9 @@ var PostContext = function(parent, items, container){
     $("#acc_wrapper").append(content_section);
     
     var menu_section = "<div id='acc_content_menu' class='acc'> \
+        <button class='acc_menu_button' id='menuReadComments'>Comments</button> \
         <button class='acc_menu_button' id='menuReadContent'>Read Post</button> \
-        <button class='acc_menu_button' id='menuReadComments'>Read Comments</button> \
-        <button class='acc_menu_button' id='menuGoBack'>Back to Posts</button> \
+        <button class='acc_menu_button' id='menuGoBack'>Go Back</button> \
         <button class='acc_menu_button' id='menuChangeSubreddit'>Change Subreddit</button> \
       </div>";
     $("#acc_wrapper").append(menu_section);
@@ -367,15 +363,48 @@ var PostMenuContext = function(parent, items, container){
   this.unique_handle_select = () => {
     return false;
   }
+
+  this._create_comment_context = () => {
+    var comments = $(".acc_comment");
+    var comment_items = [];
+    for (var i = 0; i < comments.length; i++){
+      comment_items.push(new GenericItem(comments[i], (event)=>{}));
+    }
+    if (comment_items.length == 0){
+      console.debug(comment_items.length);
+      acc_speak("There are no comments");
+      return;
+    }
+    var comment_ctx = new CommentContext(this, comment_items, $("#acc_comments"));
+    window.cursor.switch_context(comment_ctx);
+
+    // Change the focus.
+    this.current.unfocus();
+    comment_ctx.goto(comment_ctx.current);
+  }
   
   var items = [
-    new ButtonItem($("#menuReadContent"), (event)=>{}),
-    new ButtonItem($("#menuReadComments"), (event)=>{}),
-    new ButtonItem($("#menuGoBack"), (event)=>{
+    new GenericItem($("#menuReadComments"), (event)=>{
+      this._create_comment_context();
+    }),
+    new GenericItem($("#menuReadContent"), (event)=>{}),
+    new GenericItem($("#menuGoBack"), (event)=>{
       this.ascend();
     }),
-    new ButtonItem($("#menuChangeSubreddit"), (event)=>{})
+    new GenericItem($("#menuChangeSubreddit"), (event)=>{})
   ];
+  Context.call(this, parent, items, container);
+}
+
+var CommentContext = function(parent, items, container){
+  
+  this.unique_handle_select = () => {
+    console.debug("SELECTED COMMENT");
+    this.current.unfocus();
+    window.cursor.switch_context(this.parent);
+    this.parent.goto(this.parent.current);
+  }
+
   Context.call(this, parent, items, container);
 }
 
@@ -398,7 +427,7 @@ var Cursor = function(context){
 
   // SETUP KEY HANDLERS - GLOBALLY NEEDED
   ((subreddit) => {
-    console.log("Setup key handlers");
+    console.debug("Setup key handlers");
     $(window).keydown((eventData) => {
       if ( $.inArray(eventData.which, NEXT_SWITCH_KEYS) >= 0){
         // next
@@ -422,24 +451,26 @@ var Cursor = function(context){
 function main(){
   // Setup inheritance
   inheritsFrom(PostItem, Item);
-  inheritsFrom(ButtonItem, Item);
+  inheritsFrom(GenericItem, Item);
   inheritsFrom(PostContext, Context);
+  inheritsFrom(PostMenuContext, Context);
+  inheritsFrom(CommentContext, Context);
 
-  console.log("Checking before startup...");
+  console.debug("Checking before startup...");
   // Ask the background if the app is enabled...
   chrome.runtime.sendMessage({query: "checkEnabled"}, function(response) {
     if (response.app_enabled){
-      console.log("Extension Enabled.");
+      console.debug("Extension Enabled.");
       init();
     } else{
-      console.log(response);
-      console.log("Extension Disabled.");
+      console.debug(response);
+      console.debug("Extension Disabled.");
     }
   });
 }
 
 function init(){
-  console.log("Initializing accessibleReddit...");
+  console.debug("Initializing accessibleReddit...");
   // Parse posts.
   var posts = $(".link");
   var post_items = [];
@@ -459,7 +490,7 @@ function get_subreddit(){
   var url = window.location.pathname;
   var after_r = url.split('/r/')[1];
   var before_slash = after_r.split('/');
-  console.log("You are reading "+ before_slash[0]);
+  console.debug("You are reading "+ before_slash[0]);
   return before_slash[0];
 }
 
@@ -479,8 +510,9 @@ function acc_speak(text){
 
 function scrollTo(elem, parent_container) {
   // takes 2 items, scrolls the parent to elem
-  var elem_top = $(elem).offset().top - 120;
-  var current_pos = $(parent_container).scrollTop();
+  var parent_top = $(parent_container).offset().top; // absolute position of parent.
+  var elem_top = $(elem).offset().top - parent_top - 60;  // position of element with respect to top of parent.
+  var current_pos = $(parent_container).scrollTop(); // where the scrollbar is.
   $(parent_container).animate({
       scrollTop: elem_top + current_pos
     },500);
@@ -520,7 +552,7 @@ function url_to_a(url){
 // Listen for messages from the pop up.
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    console.log(sender.tab ?
+    console.debug(sender.tab ?
                 "from a content script:" + sender.tab.url :
                 "from the extension");
     if (request.query == "reload"){

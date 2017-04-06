@@ -130,6 +130,7 @@ body .content .spacer {
 }
 .thing.link.acc_focused, .acc_focused, .nextprev a.acc_focused {
   background-color: #bad4ff;
+  border: 2px solid blue;
 }
 /*
 Custom Scrolling
