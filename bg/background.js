@@ -13,8 +13,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       });
     }
     else if (request.query == "checkEnabled"){
-      if (window.app_enabled)
-        chrome.tabs.insertCSS(sender.tab.id, {file:"content.css", runAt: "document_end"}, function(){});
+      if (window.app_enabled){
+        chrome.tabs.insertCSS(sender.tab.id, {file:"/css/content.css", runAt: "document_end"}, function(){});
+        if (request.page == "choose")
+          chrome.tabs.insertCSS(sender.tab.id, {file:"/css/choose.css", runAt: "document_end"}, function(){});
+      }
       sendResponse({app_enabled: window.app_enabled});  // don't allow this web page access
       console.log("Query done.  checkEnabled");
     

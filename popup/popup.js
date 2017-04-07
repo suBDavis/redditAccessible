@@ -1,3 +1,5 @@
+const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
+
 function toggle(){
   var bttn = $("#toggle");
   var query = "toggleApp"

@@ -7,6 +7,7 @@ const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be'];
 const TWITTER_DOMAINS = ['twitter.com'];
 const GFYCAT_DOMAINS = ['gfycat.com'];
 const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
+const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
@@ -174,7 +175,7 @@ var PostItem = function(elem){
   }
 };
 
-var GenericItem = function(elem, generic_select_function){
+var GenericItem = function(elem, select_callback){
   Item.call(this, elem);
   this.focus = (container) => {
     scrollTo(this.elem, container);
@@ -186,7 +187,7 @@ var GenericItem = function(elem, generic_select_function){
     $(this.elem).removeClass("acc_focused");
   }
   this.select = () => {
-    generic_select_function();
+    select_callback(this.elem);
   }
 }
 
@@ -309,30 +310,6 @@ var PostContext = function(parent, items, container){
       this.addItem(nextbtn);
   })();
 
-  // REMOVE ALL THE OTHER TRASH IN DOM
-  (() => {
-    $("#header").remove(); 
-    $(".side").remove();
-    $(".footer-parent").remove();
-    $(".thumbnail").remove(); //in post thumbnain
-    $(".tagline").remove(); // in post
-    $(".flat-list").remove(); //in post
-    $(".promotedlink").remove(); // remove any promoted links
-    $(".expando-button").remove(); // the +> expander button
-    $(".rank").remove(); // number rank
-    $(".domain").remove(); // in post
-    $(".listing-chooser").remove(); // right gripper thing
-    $(".organic-listing").remove(); // promoted links
-    $(".nextprev .separator").remove(); // stupid separator between 'prev' and 'next'
-
-    var children = $(".nextprev").children('span');
-    $(".nextprev").html(children); // text around next button
-    $(".link .entry .title a").click(function(e){
-      // Disable all links. We aren't going to use them.
-      e.preventDefault();
-    });
-  })();
-
   //Pre-populates the page with the new DOM elements that this application needs.
   ((subreddit) => {
     var acc_wrapper = "<div id='acc_wrapper'></div>";
@@ -391,7 +368,9 @@ var PostMenuContext = function(parent, items, container){
     new GenericItem($("#menuGoBack"), (event)=>{
       this.ascend();
     }),
-    new GenericItem($("#menuChangeSubreddit"), (event)=>{})
+    new GenericItem($("#menuChangeSubreddit"), (event)=>{
+      window.location.href = CHANGE_REDDIT_URL;
+    })
   ];
   Context.call(this, parent, items, container);
 }
@@ -405,6 +384,13 @@ var CommentContext = function(parent, items, container){
     this.parent.goto(this.parent.current);
   }
 
+  Context.call(this, parent, items, container);
+}
+
+var SubredditContext = function(parent, items, container){
+  (()=>{
+    // Add something to the top of the page.
+  })();
   Context.call(this, parent, items, container);
 }
 
@@ -426,7 +412,7 @@ var Cursor = function(context){
   this.switch_context(context);
 
   // SETUP KEY HANDLERS - GLOBALLY NEEDED
-  ((subreddit) => {
+  (() => {
     console.debug("Setup key handlers");
     $(window).keydown((eventData) => {
       if ( $.inArray(eventData.which, NEXT_SWITCH_KEYS) >= 0){
@@ -440,40 +426,34 @@ var Cursor = function(context){
         this.previous();
       }
     });
-  })(get_subreddit());
+  })();
 
 }
 
 /*
-  MAIN APPLICATION LOGIC
+  INIT - When extension is enabled.
 */
 
-function main(){
+function init(){
+  console.debug("Initializing accessibleReddit...");
   // Setup inheritance
+  function inheritsFrom(child, parent) {
+    child.prototype = Object.create(parent.prototype);
+  };
   inheritsFrom(PostItem, Item);
   inheritsFrom(GenericItem, Item);
   inheritsFrom(PostContext, Context);
   inheritsFrom(PostMenuContext, Context);
   inheritsFrom(CommentContext, Context);
-
-  console.debug("Checking before startup...");
-  // Ask the background if the app is enabled...
-  chrome.runtime.sendMessage({query: "checkEnabled"}, function(response) {
-    if (response.app_enabled){
-      console.debug("Extension Enabled.");
-      init();
-    } else{
-      console.debug(response);
-      console.debug("Extension Disabled.");
-    }
-  });
 }
 
-function init(){
-  console.debug("Initializing accessibleReddit...");
+function subreddit_init(){
+  init();
+  // Remove things we dont' want.
+  remove_elements();
   // Parse posts.
-  var posts = $(".link");
-  var post_items = [];
+  var posts = $(".thing");
+  var post_items = []; 
   for (var i = 0; i < posts.length; i++)
     post_items.push(new PostItem(posts[i]));
   // Setup nagivation handlers.
@@ -482,9 +462,37 @@ function init(){
   ctx.goto(ctx.current);
 }
 
-/*
-  APP HELPERS
+function choose_init(){
+  init();
+  remove_elements();
+  remove_choose_elements();
+  var subreddits = $(".thing");
+  var subreddit_items = []; 
+  for (var i = 0; i < subreddits.length; i++)
+    subreddit_items.push(new GenericItem(subreddits[i], (elem)=>{
+      // on click, goto subreddit selected.
+      var target = $(elem).find(".entry .titlerow a").first().attr('href');
+      window.location.href = target;
+    }));
+  // Setup nagivation handlers.
+  var ctx = new SubredditContext(null, subreddit_items, $("#siteTable"));
+  window.cursor = new Cursor(ctx);
+  ctx.goto(ctx.current);
+}
+
+/* 
+  GENERAL HELPER FUNCTIONS
 */
+
+function acc_speak(text){
+  // Ask the background whether or not speech is enabled.
+  chrome.runtime.sendMessage({query: "checkSpeech"}, function(response) {
+    if (response.speech_enabled){
+      var msg = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(msg);
+    }
+  });
+}
 
 function get_subreddit(){
   var url = window.location.pathname;
@@ -494,18 +502,34 @@ function get_subreddit(){
   return before_slash[0];
 }
 
-/* 
-  GENERAL HELPER FUNCTIONS
-*/
+function remove_elements(){
+  // REMOVE ALL THE OTHER TRASH IN DOM
+  $("#header").remove(); 
+  $(".side").remove();
+  $(".footer-parent").remove();
+  $(".thumbnail").remove(); //in post thumbnain
+  $(".tagline").remove(); // in post
+  $(".flat-list").remove(); //in post
+  $(".promotedlink").remove(); // remove any promoted links
+  $(".expando-button").remove(); // the +> expander button
+  $(".rank").remove(); // number rank
+  $(".domain").remove(); // in post
+  $(".listing-chooser").remove(); // right gripper thing
+  $(".organic-listing").remove(); // promoted links
+  $(".nextprev .separator").remove(); // stupid separator between 'prev' and 'next'
 
-function acc_speak(text){
-  var msg = new SpeechSynthesisUtterance(text);
-  chrome.runtime.sendMessage({query: "checkSpeech"}, function(response) {
-    if (response.speech_enabled){
-      window.speechSynthesis.speak(msg);
-    }
+  var children = $(".nextprev").children('span');
+  $(".nextprev").html(children); // text around next button
+  $(".link .entry .title a").click(function(e){
+    // Disable all links. We aren't going to use them.
+    e.preventDefault();
   });
-  return msg;
+}
+function remove_choose_elements(){
+  // A couple things on /subreddits/mine
+  $(".menuarea").remove();
+  $(".infobar").remove();
+  $(".midcol").remove();
 }
 
 function scrollTo(elem, parent_container) {
@@ -517,10 +541,6 @@ function scrollTo(elem, parent_container) {
       scrollTop: elem_top + current_pos
     },500);
 }
-
-function inheritsFrom(child, parent) {
-    child.prototype = Object.create(parent.prototype);
-};
 
 function decodeEntities(encodedString) {
     // takes an ascii-escaped string and converts it back to raw html.
@@ -547,20 +567,49 @@ function url_to_a(url){
   return l;
 }
 
-// Begin...
+/*
+  MAIN - Runs on code INJECT.
+*/
 
-// Listen for messages from the pop up.
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.debug(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    if (request.query == "reload"){
-      location.reload();
-      sendResponse({status: "thanks"});
-    } else {
-      sendResponse({status: "unknown"});
+(()=>{
+  console.debug("Checking before startup...");
+
+  // Listen for messages from chrome runtime.
+  chrome.runtime.onMessage.addListener(
+    function(request, sender, sendResponse) {
+      console.debug(sender.tab ?
+                  "from a content script:" + sender.tab.url :
+                  "from the extension");
+      if (request.query == "reload"){
+        window.location.reload();
+        sendResponse({status: "thanks"});
+      } else {
+        sendResponse({status: "unknown"});
+      }
+  });
+
+  // Check what sort of page we are on.
+  var init_func;
+  var page;
+  var path = window.location.pathname;
+  switch (path){
+    case "/subreddits/mine":
+      init_func = choose_init;
+      page = "choose";
+      break;
+    default:
+      init_func = subreddit_init;
+      page = "subreddit";
+      break;
+  }
+  // Ask the background if the app is enabled...
+  chrome.runtime.sendMessage({query: "checkEnabled", page: page}, function(response) {
+    if (response.app_enabled){
+      console.debug("Extension Enabled.");
+      init_func();
+    } else{
+      console.debug(response);
+      console.debug("Extension Disabled.");
     }
-});
-
-main();
+  });
+})();

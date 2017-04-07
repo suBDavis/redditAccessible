@@ -17,7 +17,7 @@ body .content .spacer {
 .thing.link .score {
   color: #00183f;
 }
-.thing.link {
+.thing.link, .thing.subreddit{
   font-color: black;
   border: 2px solid black;
   border-radius: 8px;
@@ -28,7 +28,7 @@ body .content .spacer {
   margin-right: 0px;
   padding: 10px;
 }
-.link .entry .title a {
+.thing .entry .title a {
   font-size: 20px;
   color: #00183f;
 }
@@ -128,7 +128,7 @@ body .content .spacer {
   border-radius: 8px;
   border: 0px solid black;
 }
-.thing.link.acc_focused, .acc_focused, .nextprev a.acc_focused {
+.thing.link.acc_focused, .thing.subreddit.acc_focused, .acc_focused, .nextprev a.acc_focused {
   background-color: #bad4ff;
   border: 2px solid blue;
 }

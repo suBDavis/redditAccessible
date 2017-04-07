@@ -1,0 +1,25 @@
+#siteTable.sitetable.linklisting {
+  width: 95%;
+  overflow-y: auto;
+  top: 10px;
+  bottom: 0;
+}
+.thing.subreddit {
+  margin: 20px auto;
+  width: 80%;
+}
+.thing.subreddit a.title {
+  font-size: 30px;
+}
+.thing.subreddit .description {
+  width: 100%;
+  margin-right: 0px;
+  max-width: initial;
+}
+.thing.subreddit .description .md {
+  background-color: #E4E4E4;
+  max-width: initial;
+}
+.thing.subreddit .description .md p {
+  font-size: 24px;
+}

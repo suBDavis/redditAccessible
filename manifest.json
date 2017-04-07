@@ -4,25 +4,30 @@
   "name": "RedditAccessible",
   "description": "Add accessibility features for reddit.com",
   "icons": { 
-    "16": "img/icon16.png",
-    "48": "img/icon48.png",
-    "128": "img/icon128.png" 
+    "16": "/img/icon16.png",
+    "48": "/img/icon48.png",
+    "128": "/img/icon128.png" 
   },
-  "content_scripts": [{
-      "matches": ["https://www.reddit.com/r/*"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.reddit.com/r/*",
+        "https://www.reddit.com/subreddits/mine*"
+      ],
       "js": [
-        "jquery.js", 
-        "reddit.js",
+        "/lib/jquery.js", 
+        "/lib/reddit.js",
         "content_script.js"
       ],
       "run_at": "document_end"
-  }],
+    }
+  ],
   "background": {
-    "page": "background.html"
+    "page": "bg/background.html"
   },
   "browser_action": {
-    "default_icon": "img/popup.png",
-    "default_popup": "popup.html",
+    "default_icon": "/img/popup.png",
+    "default_popup": "/popup/popup.html",
     "default_title": "Toggle RedditAccessible"
   },
   "permissions": [
@@ -32,7 +37,13 @@
     "https://www.reddit.com/r/*"
   ],
   "externally_connectable": {
-    "matches": ["https://www.reddit.com/r/*"]
+    "matches": [
+      "https://www.reddit.com/r/*",
+      "https://www.reddit.com/subreddits/mine*"
+    ]
   },
-  "web_accessible_resources": ["content.css"]
+  "web_accessible_resources": [
+    "/css/content.css",
+    "/css/choose.css"
+  ]
 }
