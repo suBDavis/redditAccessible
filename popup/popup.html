@@ -7,6 +7,7 @@
       border-radius: 8px;
       border: 3px solid black;
       padding: 10px;
+      text-align: center;
     }
     button {
       width: 180px;
@@ -26,6 +27,9 @@
       font-size: 26px;
       margin-top: 20px;
     }
+    input {
+      display: inline-block;
+    }
     #snoo {
       display: block;
       margin-top: 26px;
@@ -38,6 +42,8 @@
   <h2>Accessible Reddit</h2>
   <button id="toggle">Disable</button>
   <button id="toggleSpeech">Enable Speech</button>
+  <h3>Font Size</h3>
+  <input type="range" id="fontSize" min=16 max=24 step=2 value=18>
   <button id="tutorial">Tutorial</button>
   <img id="snoo" width="64px" height="auto" src="/img/snoo.png">
 </body>

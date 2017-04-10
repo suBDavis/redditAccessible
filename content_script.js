@@ -8,6 +8,7 @@ const TWITTER_DOMAINS = ['twitter.com'];
 const GFYCAT_DOMAINS = ['gfycat.com'];
 const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
 const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
+const UNFLUFF_SERVER = "https://unfluff.subdavis.com:8443/unfluff";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
@@ -169,8 +170,25 @@ var PostItem = function(elem){
     } else if ($.inArray(content_domain, IFRAME_DOMAINS) >= 0) {
       $("#acc_content").html("<iframe type='text/html' height='100%' width='100%' frameborder='0' scrolling='no' allowfullscreen src='"+content_url+"'><\/iframe>");
     
+    // HAIL MARY - TRY UNFLUFF
     } else {
-      $("#acc_content").html("<p>[Could not display content] <\/p>" + content_url);
+      $.ajax({
+        type:"GET",
+        url: UNFLUFF_SERVER + "?url=" + content_url,
+        success: function(data){
+          var article = "<a href='"+data.canonicalLink+"'><h1>"+data.title+"<\/h1><\/a>";
+          article += "<img src="+data.image+"><\/img>";
+          // break article up by periods...
+          var sentences = data.text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
+          for (var i=0; i<sentences.length; i++)
+            article += "<p>" + sentences[i] + "<\/p>";
+          $("#acc_content").html(article);
+        },
+        error: function(e){
+          console.error(e);
+        }
+      });
+      $("#acc_content").html("<p>[LOADING CONTENT....] <\/p>" + content_url);
     }
   }
 };

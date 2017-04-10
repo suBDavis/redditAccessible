@@ -48,3 +48,5 @@ window.onload = function () {
   $("#toggle").on('click', toggle);
   $("#toggleSpeech").on('click', toggleVoiceOver);
 };
+
+// TODO: implement font size slider...
