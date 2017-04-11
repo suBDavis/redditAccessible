@@ -2,13 +2,14 @@ const BASEURL = "https://www.reddit.com/";
 const REDDIT_IMAGE_DOMAINS = ["i.redd.it"]; // the data domains that we can load as images.
 const IMAGE_EXTENSIONS = ["jpg","png","gif","jpeg"];
 const VIDEO_EXTENSIONS = ["gifv", "webm", "mp4"];
-const IFRAME_DOMAINS = ['flic.kr', 'flickr.com']; // for these urls, the page is good for IFRAME.
+const IFRAME_DOMAINS = ['flic.kr', 'flickr.com', 'xkcd.com']; // for these urls, the page is good for IFRAME.
 const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be'];
-const TWITTER_DOMAINS = ['twitter.com'];
+const TWITTER_DOMAINS = ['twitter.com', 'mobile.twitter.com'];
 const GFYCAT_DOMAINS = ['gfycat.com'];
 const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
 const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
 const UNFLUFF_SERVER = "https://unfluff.subdavis.com:8443/unfluff";
+const TWITTER_FETCHER = "https://unfluff.subdavis.com:8443/twitter";
 const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
@@ -56,7 +57,6 @@ var PostItem = function(elem){
     var post_id = $(post).attr("data-fullname");
     var data_domain = $(post).attr("data-domain");
     post_id = post_id.substring(3);
-    console.debug("Displaying " + post_id);
 
     // load the comments 
     var comment_url = "/r/" + subreddit + "/comments/" + post_id + ".json";
@@ -67,7 +67,6 @@ var PostItem = function(elem){
       
       // REDDIT TEXT TYPE
       if (data_domain == "self."+subreddit){
-        console.debug("Displaying TEXT POST");
         // IF TEXT POST, comment data will contain the text post as well...
         var html_post = data[0].data.children[0].data.selftext_html;
         var decoded = decodeEntities(html_post);
@@ -75,7 +74,6 @@ var PostItem = function(elem){
       
       // REDDIT IMAGE TYPE
       } else if ( $.inArray(data_domain, REDDIT_IMAGE_DOMAINS) >= 0 ){
-        console.debug("Displaying IMAGE POST");
         var content_url = data[0].data.children[0].data.url;
         var html_post = "<img src='"+content_url+"'><\/img>";
         $("#acc_content").html(html_post);
@@ -140,24 +138,15 @@ var PostItem = function(elem){
 
     // EMBEDDED TWEET
     } else if ($.inArray(content_domain, TWITTER_DOMAINS) >= 0 ) {
-      var twitter_oEmbed_url = "https://api.twitter.com/1.1/statuses/oembed.json?id=";
-      var href = url_to_a(content_url);
-      var tweet_id = href.pathname.substring(href.pathname.lastIndexOf('status\/')+7); // 7 for length of "status/"
-      if (tweet_id.indexOf("\/") >= 0)
-        tweet_id = tweet_id.substring(0, tweet_id.indexOf("\/"));
-      console.debug("Fetching tweet " + tweet_id);
-
       // Load the tweet from the oEmbed endpoint
       $.ajax({
         type: "GET",
-        url: twitter_oEmbed_url + tweet_id,
-        jsonCallback: "jsonp",
-        dataType: 'jsonp',
+        url: TWITTER_FETCHER + "?url=" + content_url,
         success: function(data){
           $("#acc_content").html(data.html);
         }
       });
-
+      $("#acc_content").text("[LOADING TWEET...]");
     // GFYCAT
     } else if ($.inArray(content_domain, GFYCAT_DOMAINS) >= 0) {
       var path = url_to_a(content_url).pathname;
@@ -176,13 +165,17 @@ var PostItem = function(elem){
         type:"GET",
         url: UNFLUFF_SERVER + "?url=" + content_url,
         success: function(data){
-          var article = "<a href='"+data.canonicalLink+"'><h1>"+data.title+"<\/h1><\/a>";
-          article += "<img src="+data.image+"><\/img>";
-          // break article up by periods...
-          var sentences = data.text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
-          for (var i=0; i<sentences.length; i++)
-            article += "<p>" + sentences[i] + "<\/p>";
-          $("#acc_content").html(article);
+          if (data.error)
+            $("#acc_content").html("<p>[Could not load]<\/p>" + content_url);
+          else {
+            var article = "<a href='"+data.canonicalLink+"'><h1>"+data.title+"<\/h1><\/a>";
+            article += "<img class='acc_article' src="+data.image+"><\/img>";
+            // break article up by periods...
+            var sentences = data.text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
+            for (var i=0; i<sentences.length; i++)
+              article += "<p>" + sentences[i] + "<\/p>";
+            $("#acc_content").html(article);
+          }
         },
         error: function(e){
           console.error(e);
@@ -516,7 +509,6 @@ function get_subreddit(){
   var url = window.location.pathname;
   var after_r = url.split('/r/')[1];
   var before_slash = after_r.split('/');
-  console.debug("You are reading "+ before_slash[0]);
   return before_slash[0];
 }
 

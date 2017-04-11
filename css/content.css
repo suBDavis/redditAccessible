@@ -93,12 +93,21 @@ body .content .spacer {
 }
 #acc_content p{
   font-size: 20px;
-  margin: 10px 0px;
+  margin: 15px 10px;
 }
 #acc_content img{
   height: 100%;
   overflow-y: hidden;
   text-align: center;
+  margin: 0px 10px;
+}
+#acc_content img.acc_article{
+  height: 70%;
+  float: left;
+}
+#acc_content h1 {
+  font-size: 24px;
+  font-weight: 700;
 }
 #acc_content_menu {
   height: 4vh;
