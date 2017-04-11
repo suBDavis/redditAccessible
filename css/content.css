@@ -93,19 +93,22 @@ body .content .spacer {
   height: 47vh;
   margin-top: 1vh;
   padding: 1vh;
+  overflow-x: hidden;
 }
 #acc_content p{
   font-size: 20px;
   margin: 15px 10px;
 }
 #acc_content img{
-  height: 100%;
+  max-width:98%;
+  max-height:98%;
   overflow-y: hidden;
   text-align: center;
   margin: 0px 10px;
 }
 #acc_content img.acc_article{
-  height: 70%;
+  max-height: 70%;
+  max-width: 60%;
   float: left;
 }
 #acc_content h1 {
@@ -122,6 +125,7 @@ body .content .spacer {
   margin-right: auto;
   display: inline block;
   text-align: center;
+  overflow-y: hidden;
 }
 .acc_menu_button {
   font-size: 26px;
@@ -133,6 +137,7 @@ body .content .spacer {
 #acc_comments {
   margin-bottom: 0px;
   padding: 0px 10px;
+  margin-top: 1vh;
   height: 40vh; 
 }
 #acc_comments h1 {

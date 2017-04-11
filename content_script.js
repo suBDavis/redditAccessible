@@ -334,7 +334,7 @@ var PostContext = function(parent, items, container){
 
     var menu_section = "<div id='acc_content_menu' class='acc'> \
         <button class='acc_menu_button' id='menuReadComments'>🗨 Comments</button> \
-        <button class='acc_menu_button' id='menuReadContent'>📕 Read Post</button> \
+        <button class='acc_menu_button' id='menuReadContent'>📕 View Post</button> \
         <button class='acc_menu_button' id='menuGoBack'>⬅ Go Back</button> \
         <button class='acc_menu_button' id='menuChangeSubreddit'>🌐 Change Subreddit</button> \
       </div>";
@@ -373,19 +373,26 @@ var PostMenuContext = function(parent, items, container){
     this.current.unfocus();
     comment_ctx.goto(comment_ctx.current);
 
-    // ANIMATE EXPAND.
-    $("#acc_content").hide({duration: 200, queue: false});
-    $("#acc_comments").animate({
-      height: "91vh"
-    },{duration: 200, queue: false});
+    maximize_comments();
   }
   
+  this._create_post_body_context = () => {
+    var post = $("#acc_content");
+    var post_body_itm = new GenericItem(post, (event)=>{});
+    var post_body_ctx = new PostBodyContext(this, [post_body_itm], post);
+    window.cursor.switch_context(post_body_ctx);
+    // change the focus
+    this.current.unfocus();
+    post_body_ctx.goto(post_body_ctx.current);
+    maximize_content();
+  }
+
   var items = [
     new GenericItem($("#menuReadComments"), (event)=>{
       this._create_comment_context();
     }),
     new GenericItem($("#menuReadContent"), (event)=>{
-      // ANIMATE EXPAND
+      this._create_post_body_context();
     }),
     new GenericItem($("#menuGoBack"), (event)=>{
       this.ascend();
@@ -404,11 +411,7 @@ var CommentContext = function(parent, items, container){
     this.current.unfocus();
     window.cursor.switch_context(this.parent);
     this.parent.goto(this.parent.current);
-    // ANIMATE RETURN TO NORMAL.
-    $("#acc_content").show({duration: 200, queue: false});
-    $("#acc_comments").animate({
-      height: "40vh"
-    },{duration: 200, queue: false});
+    minimize_comments();
   }
 
   Context.call(this, parent, items, container);
@@ -418,6 +421,18 @@ var SubredditContext = function(parent, items, container){
   (()=>{
     // Add something to the top of the page.
   })();
+  Context.call(this, parent, items, container);
+}
+
+var PostBodyContext = function(parent, items, container){
+
+  this.unique_handle_select = () => {
+    console.debug("SELECTED POST");
+    this.current.unfocus();
+    window.cursor.switch_context(this.parent);
+    this.parent.goto(this.parent.current);
+    minimize_content();
+  }
   Context.call(this, parent, items, container);
 }
 
@@ -591,6 +606,38 @@ function url_to_a(url){
   var l = document.createElement("a");
   l.href = url;
   return l;
+}
+
+/* 
+  ANIMATIONS
+*/
+
+function maximize_comments(){
+  // ANIMATE EXPAND.
+  $("#acc_content").slideUp({duration: 200, queue: false});
+  $("#acc_comments").animate({
+    height: "90vh"
+  },{duration: 200, queue: false});
+}
+function minimize_comments(){
+  // ANIMATE RETURN TO NORMAL.
+  $("#acc_content").slideDown({duration: 200, queue: false});
+  $("#acc_comments").animate({
+    height: "40vh"
+  },{duration: 200, queue: false});
+}
+function maximize_content(){
+  $("#acc_comments").slideUp({duration: 200, queue: false});
+  $("#acc_content").animate({
+    height: "88vh"
+  },{duration: 200, queue: false});
+}
+function minimize_content(){
+  // ANIMATE RETURN TO NORMAL.
+  $("#acc_comments").slideDown({duration: 200, queue: false});
+  $("#acc_content").animate({
+    height: "47vh"
+  },{duration: 200, queue: false});
 }
 
 /*
