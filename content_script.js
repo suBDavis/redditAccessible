@@ -329,17 +329,17 @@ var PostContext = function(parent, items, container){
     var content_section = "<div id='acc_content' class='acc'>This is /r/"+subreddit+" - Content is loading</div>";
     $("#acc_wrapper").append(content_section);
     
+    var comment_section = "<div id='acc_comments' class='acc'><h1>Comments</h1>comments are loading...</div>";
+    $("#acc_wrapper").append(comment_section);
+
     var menu_section = "<div id='acc_content_menu' class='acc'> \
-        <button class='acc_menu_button' id='menuReadComments'>Comments</button> \
-        <button class='acc_menu_button' id='menuReadContent'>Read Post</button> \
-        <button class='acc_menu_button' id='menuGoBack'>Go Back</button> \
-        <button class='acc_menu_button' id='menuChangeSubreddit'>Change Subreddit</button> \
+        <button class='acc_menu_button' id='menuReadComments'>🗨 Comments</button> \
+        <button class='acc_menu_button' id='menuReadContent'>📕 Read Post</button> \
+        <button class='acc_menu_button' id='menuGoBack'>⬅ Go Back</button> \
+        <button class='acc_menu_button' id='menuChangeSubreddit'>🌐 Change Subreddit</button> \
       </div>";
     $("#acc_wrapper").append(menu_section);
     this.menu_subcontext = new PostMenuContext(this, [], $("#acc_content_menu").first());
-    
-    var comment_section = "<div id='acc_comments' class='acc'><h1>Comments</h1>comments are loading...</div>";
-    $("#acc_wrapper").append(comment_section);
   })(get_subreddit());
 
   this.setup_click_handers(); // Do this again, since there are new items that need click handlers...
@@ -353,6 +353,9 @@ var PostMenuContext = function(parent, items, container){
   }
 
   this._create_comment_context = () => {
+    // RUN WHEN COMMENTS ARE SELECTED.
+
+    // Create the comment contexts...
     var comments = $(".acc_comment");
     var comment_items = [];
     for (var i = 0; i < comments.length; i++){
@@ -369,13 +372,21 @@ var PostMenuContext = function(parent, items, container){
     // Change the focus.
     this.current.unfocus();
     comment_ctx.goto(comment_ctx.current);
+
+    // ANIMATE EXPAND.
+    $("#acc_content").hide({duration: 200, queue: false});
+    $("#acc_comments").animate({
+      height: "91vh"
+    },{duration: 200, queue: false});
   }
   
   var items = [
     new GenericItem($("#menuReadComments"), (event)=>{
       this._create_comment_context();
     }),
-    new GenericItem($("#menuReadContent"), (event)=>{}),
+    new GenericItem($("#menuReadContent"), (event)=>{
+      // ANIMATE EXPAND
+    }),
     new GenericItem($("#menuGoBack"), (event)=>{
       this.ascend();
     }),
@@ -393,6 +404,11 @@ var CommentContext = function(parent, items, container){
     this.current.unfocus();
     window.cursor.switch_context(this.parent);
     this.parent.goto(this.parent.current);
+    // ANIMATE RETURN TO NORMAL.
+    $("#acc_content").show({duration: 200, queue: false});
+    $("#acc_comments").animate({
+      height: "40vh"
+    },{duration: 200, queue: false});
   }
 
   Context.call(this, parent, items, container);
@@ -547,7 +563,7 @@ function scrollTo(elem, parent_container) {
   var parent_top = $(parent_container).offset().top; // absolute position of parent.
   var elem_top = $(elem).offset().top - parent_top - 60;  // position of element with respect to top of parent.
   var current_pos = $(parent_container).scrollTop(); // where the scrollbar is.
-  $(parent_container).animate({
+  $(parent_container).stop().animate({
       scrollTop: elem_top + current_pos
     },500);
 }

@@ -19,7 +19,7 @@ body .content .spacer {
 }
 .thing.link, .thing.subreddit{
   font-color: black;
-  border: 2px solid black;
+  border: 3px solid black;
   border-radius: 8px;
   background-color: white;
   margin-bottom: 20px;
@@ -37,7 +37,7 @@ body .content .spacer {
   Make this into a 2 column view.
 */
 #siteTable.sitetable {
-  width: 39%;
+  width: 35%;
   margin-left: 1%;
   float: left;
   overflow-y: auto;
@@ -66,22 +66,25 @@ body .content .spacer {
   width: 92%;
   margin: 2% 0px;
   padding: 10px 2%;
-  border: 2px solid black;
+  border: 3px solid black;
   border-radius: 8px;
+}
+.nextprev span a:hover{
+  border: 3px solid blue;
 }
 
 /*
   My custom sections
 */
 #acc_wrapper {
-  width: 57%;
-  margin-left: 41%;
+  width: 62%;
+  margin-left: 37%;
   position: fixed;
   height: 100vh;
 }
 .acc {
-  margin-bottom: 2vh;
-  border: 2px solid black;
+  margin-bottom: 1vh;
+  border: 3px solid black;
   border-radius: 8px;
   font-size: 20px;
   overflow-y: auto;
@@ -89,7 +92,7 @@ body .content .spacer {
 #acc_content {
   height: 47vh;
   margin-top: 1vh;
-  padding: 1vh
+  padding: 1vh;
 }
 #acc_content p{
   font-size: 20px;
@@ -110,16 +113,21 @@ body .content .spacer {
   font-weight: 700;
 }
 #acc_content_menu {
-  height: 4vh;
+  height: 6vh;
   padding: 0px;
   border: 0px;
   padding-left: 0px;
+  margin-top: 1vh;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline block;
+  text-align: center;
 }
 .acc_menu_button {
-  font-size: 20px;
+  font-size: 26px;
   padding: 0px 10px;
-  margin: 0px;
   border-radius: 8px;
+  border: 3px solid black;
   height: 100%;
 }
 #acc_comments {
@@ -136,11 +144,11 @@ body .content .spacer {
   padding: 5px;
   margin: 10px 0px;
   border-radius: 8px;
-  border: 0px solid black;
+  border: 3px solid gray;
 }
 .thing.link.acc_focused, .thing.subreddit.acc_focused, .acc_focused, .nextprev a.acc_focused {
   background-color: #bad4ff;
-  border: 2px solid blue;
+  border: 3px solid blue;
 }
 /*
 Custom Scrolling
