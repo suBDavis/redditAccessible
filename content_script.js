@@ -1,5 +1,5 @@
 const BASEURL = "https://www.reddit.com/";
-const REDDIT_IMAGE_DOMAINS = ["i.redd.it"]; // the data domains that we can load as images.
+const REDDIT_IMAGE_DOMAINS = ["i.redd.it", 'i.reddituploads.com', 'i.redditmedia.com']; // the data domains that we can load as images.
 const IMAGE_EXTENSIONS = ["jpg","png","gif","jpeg"];
 const VIDEO_EXTENSIONS = ["gifv", "webm", "mp4"];
 const IFRAME_DOMAINS = ['flic.kr', 'flickr.com', 'xkcd.com']; // for these urls, the page is good for IFRAME.
@@ -10,7 +10,7 @@ const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
 const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
 const UNFLUFF_SERVER = "https://unfluff.subdavis.com:8443/unfluff";
 const TWITTER_FETCHER = "https://unfluff.subdavis.com:8443/twitter";
-const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN
+const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN, TAB
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
 
@@ -75,6 +75,8 @@ var PostItem = function(elem){
       // REDDIT IMAGE TYPE
       } else if ( $.inArray(data_domain, REDDIT_IMAGE_DOMAINS) >= 0 ){
         var content_url = data[0].data.children[0].data.url;
+        if (data_domain == 'i.reddituploads.com')
+          content_url = content_url.replace('&amp;', '&');
         var html_post = "<img src='"+content_url+"'><\/img>";
         $("#acc_content").html(html_post);
       
@@ -143,7 +145,7 @@ var PostItem = function(elem){
         type: "GET",
         url: TWITTER_FETCHER + "?url=" + content_url,
         success: function(data){
-          $("#acc_content").html(data.html);
+          $("#acc_content").html("<h1>Twitter: <\/h1>" + data.html);
         }
       });
       $("#acc_content").text("[LOADING TWEET...]");
@@ -516,6 +518,9 @@ function subreddit_init(){
   var post_items = []; 
   for (var i = 0; i < posts.length; i++)
     post_items.push(new PostItem(posts[i]));
+  // Add the ABOUT section as a post on the first page.
+  var about = $(".usertext-body");
+  
   // Setup nagivation handlers.
   var ctx = new PostContext(null, post_items, $("#siteTable"));
   window.cursor = new Cursor(ctx);
@@ -557,8 +562,11 @@ function acc_speak(text){
 function get_subreddit(){
   var url = window.location.pathname;
   var after_r = url.split('/r/')[1];
-  var before_slash = after_r.split('/');
-  return before_slash[0];
+  if (typeof after_r !== 'undefined'){
+    var before_slash = after_r.split('/');
+    return before_slash[0];  
+  }
+  return "front_page";
 }
 
 function remove_elements(){
