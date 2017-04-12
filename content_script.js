@@ -10,7 +10,7 @@ const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
 const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
 const UNFLUFF_SERVER = "https://unfluff.subdavis.com:8443/unfluff";
 const TWITTER_FETCHER = "https://unfluff.subdavis.com:8443/twitter";
-const NEXT_SWITCH_KEYS = [39, 40]; // RIGHT, DOWN, TAB
+const NEXT_SWITCH_KEYS = [39, 40, 9]; // RIGHT, DOWN, TAB
 const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
 
@@ -477,12 +477,15 @@ var Cursor = function(context){
     $(window).keydown((eventData) => {
       if ( $.inArray(eventData.which, NEXT_SWITCH_KEYS) >= 0){
         // next
+        eventData.preventDefault();
         this.next();
       } else if ($.inArray(eventData.which, SELECT_SWITCH_KEYS) >= 0) {
         // select
+        eventData.preventDefault();
         this.select();
       } else if ($.inArray(eventData.which, BACK_KEYS) >= 0) {
         // back...
+        eventData.preventDefault();
         this.previous();
       }
     });
