@@ -28,6 +28,10 @@ function toggleVoiceOver(){
   }
 }
 
+function openMySubreddits(){
+  chrome.tabs.create({url: CHANGE_REDDIT_URL});
+}
+
 function send(message, callback){
   // First, update our internal state...
   chrome.runtime.sendMessage(message, function(response) {
@@ -47,6 +51,7 @@ window.onload = function () {
   });
   $("#toggle").on('click', toggle);
   $("#toggleSpeech").on('click', toggleVoiceOver);
+  $("#changeSubreddit").on('click', openMySubreddits);
 };
 
 // TODO: implement font size slider...

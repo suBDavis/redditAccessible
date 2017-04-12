@@ -1,12 +1,15 @@
+body.subreddits-page {
+  background-color: #5E5E5E;
+}
 #siteTable.sitetable.linklisting {
-  width: 95%;
+  width: 98%;
   overflow-y: auto;
   top: 10px;
   bottom: 0;
 }
 .thing.subreddit {
-  margin: 20px auto;
-  width: 80%;
+  margin: 30px auto;
+  width: 65%;
 }
 .thing.subreddit a.title {
   font-size: 30px;
@@ -16,10 +19,22 @@
   margin-right: 0px;
   max-width: initial;
 }
-.thing.subreddit .description .md {
+.thing.subreddit .description .usertext .md {
   background-color: #E4E4E4;
   max-width: initial;
+  border: 3px solid gray;
+  margin-top: 14px;
+  padding: 18px inherit;
 }
-.thing.subreddit .description .md p {
+.thing.subreddit .description .usertext .md p {
   font-size: 24px;
+}
+.nav-buttons {
+  margin: 20px auto;
+  width: 65%;
+}
+.nav-buttons .nextprev span a {
+  padding: 12px;
+  font-size: 30px;
+  margin: 0px auto;
 }

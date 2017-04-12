@@ -3,7 +3,7 @@ const REDDIT_IMAGE_DOMAINS = ["i.redd.it"]; // the data domains that we can load
 const IMAGE_EXTENSIONS = ["jpg","png","gif","jpeg"];
 const VIDEO_EXTENSIONS = ["gifv", "webm", "mp4"];
 const IFRAME_DOMAINS = ['flic.kr', 'flickr.com', 'xkcd.com']; // for these urls, the page is good for IFRAME.
-const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be'];
+const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be', 'm.youtube.com'];
 const TWITTER_DOMAINS = ['twitter.com', 'mobile.twitter.com'];
 const GFYCAT_DOMAINS = ['gfycat.com'];
 const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
@@ -418,10 +418,26 @@ var CommentContext = function(parent, items, container){
 }
 
 var SubredditContext = function(parent, items, container){
-  (()=>{
-    // Add something to the top of the page.
-  })();
   Context.call(this, parent, items, container);
+  // SET UP OTHER BUTTON HANDLERS
+  (() => { 
+    $(".next-button a").text("Next Page");
+    $(".prev-button a").text("Previous Page");
+    
+    var nextbtn = new GenericItem($(".next-button a").get(0), (event)=>{
+      console.debug("selected next");
+      window.location.href = $(".next-button a").first().attr('href');
+    });
+    var prevbtn = new GenericItem($(".prev-button a").get(0), (event)=>{
+      console.debug("selected prev");
+      window.location.href = $(".prev-button a").first().attr('href');
+    });
+
+    if (prevbtn.elem)
+      this.addItem(prevbtn);
+    if (nextbtn.elem)
+      this.addItem(nextbtn);
+  })();
 }
 
 var PostBodyContext = function(parent, items, container){
@@ -485,8 +501,10 @@ function init(){
   inheritsFrom(PostItem, Item);
   inheritsFrom(GenericItem, Item);
   inheritsFrom(PostContext, Context);
+  inheritsFrom(PostBodyContext, Context);
   inheritsFrom(PostMenuContext, Context);
   inheritsFrom(CommentContext, Context);
+  inheritsFrom(SubredditContext, Context);
 }
 
 function subreddit_init(){
@@ -616,7 +634,7 @@ function maximize_comments(){
   // ANIMATE EXPAND.
   $("#acc_content").slideUp({duration: 200, queue: false});
   $("#acc_comments").animate({
-    height: "90vh"
+    height: "88vh"
   },{duration: 200, queue: false});
 }
 function minimize_comments(){
@@ -629,14 +647,14 @@ function minimize_comments(){
 function maximize_content(){
   $("#acc_comments").slideUp({duration: 200, queue: false});
   $("#acc_content").animate({
-    height: "88vh"
+    height: "87vh"
   },{duration: 200, queue: false});
 }
 function minimize_content(){
   // ANIMATE RETURN TO NORMAL.
   $("#acc_comments").slideDown({duration: 200, queue: false});
   $("#acc_content").animate({
-    height: "47vh"
+    height: "44vh"
   },{duration: 200, queue: false});
 }
 

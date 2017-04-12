@@ -1,12 +1,13 @@
 /*
   Make links easier to look at
 */
-body {
+body.listing-page {
   height: inherit;
   min-height: 0px;
   overflow-y: hidden;
   padding: 0px;
   margin: 0px;
+  background-color: #5E5E5E;
 }
 body .content {
   margin-top: 0px;
@@ -29,7 +30,7 @@ body .content .spacer {
   padding: 10px;
 }
 .thing .entry .title a {
-  font-size: 20px;
+  font-size: 24px;
   color: #00183f;
 }
 
@@ -76,6 +77,9 @@ body .content .spacer {
 /*
   My custom sections
 */
+#acc_comments, #acc_content{
+  background-color: white;
+}
 #acc_wrapper {
   width: 62%;
   margin-left: 37%;
@@ -83,16 +87,16 @@ body .content .spacer {
   height: 100vh;
 }
 .acc {
-  margin-bottom: 1vh;
+  margin: 2vh 0px;
   border: 3px solid black;
   border-radius: 8px;
   font-size: 20px;
   overflow-y: auto;
 }
 #acc_content {
-  height: 47vh;
-  margin-top: 1vh;
+  height: 44vh;
   padding: 1vh;
+  margin-top: 1vh;
   overflow-x: hidden;
 }
 #acc_content p{
@@ -120,7 +124,6 @@ body .content .spacer {
   padding: 0px;
   border: 0px;
   padding-left: 0px;
-  margin-top: 1vh;
   margin-left: auto;
   margin-right: auto;
   display: inline block;
@@ -135,9 +138,7 @@ body .content .spacer {
   height: 100%;
 }
 #acc_comments {
-  margin-bottom: 0px;
   padding: 0px 10px;
-  margin-top: 1vh;
   height: 40vh; 
 }
 #acc_comments h1 {
@@ -159,23 +160,29 @@ body .content .spacer {
 Custom Scrolling
 */
 ::-webkit-scrollbar-track-piece{
-  background-color:#fff;
+  /*background-color:#fff;*/
   -webkit-border-radius:0;
 }
 ::-webkit-scrollbar{
-  width:8px;
+  width:14px;
   height:8px;
 }
 ::-webkit-scrollbar-thumb{
   height:50px;
-  background-color:#999;
-  -webkit-border-radius:4px;
-  outline:2px solid #fff;
-  outline-offset:-2px;
-  border: 2px solid #fff;
+  width: 8px;
+  background-color: white;
+  -webkit-border-radius:8px;
+  border: 4px solid #5E5E5E;
 }
 ::-webkit-scrollbar-thumb:hover{
   height:50px;
-  background-color:#9f9f9f;
+  /*background-color:#9f9f9f;*/
   -webkit-border-radius:4px;
+}
+/*
+Except in the content, where the scrollbar inherits white..
+*/
+#acc_wrapper ::-webkit-scrollbar-thumb{
+  border: 4px solid white;
+  background-color: black;
 }
