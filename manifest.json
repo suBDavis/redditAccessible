@@ -12,7 +12,7 @@
     {
       "matches": [
         "https://www.reddit.com/r/*",
-        "https://www.reddit.com/subreddits/mine*"
+        "https://www.reddit.com/subreddits*"
       ],
       "js": [
         "/lib/jquery.js", 
@@ -35,12 +35,12 @@
     "activeTab",
     "storage",
     "https://www.reddit.com/r/*",
-    "https://www.reddit.com/subreddits/mine*"
+    "https://www.reddit.com/subreddits*"
   ],
   "externally_connectable": {
     "matches": [
       "https://www.reddit.com/r/*",
-      "https://www.reddit.com/subreddits/mine*"
+      "https://www.reddit.com/subreddits*"
     ]
   },
   "web_accessible_resources": [

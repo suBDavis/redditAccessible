@@ -36,12 +36,14 @@ var Item = function(elem){
 var PostItem = function(elem){
   Item.call(this, elem);
 
-  this.focus = (container) => {
+  this.focus = (container, reload) => {
     scrollTo(this.elem, container);
     $(this.elem).addClass("acc_focused");
     var title = $(this.elem).find(".title a").first().text();
     acc_speak(title);
-    this.show_details(get_subreddit(), this);
+    if (reload){
+      this.show_details(get_subreddit(), this);
+    }
   }
   this.unfocus = () => {
     $(this.elem).removeClass("acc_focused");
@@ -166,12 +168,15 @@ var PostItem = function(elem){
       $.ajax({
         type:"GET",
         url: UNFLUFF_SERVER + "?url=" + content_url,
-        success: function(data){
+        success: (data)=> {
+          if (!(window.cursor.current_context.current == this))// if the cursor has moved...
+            return false; // TODO - why doesnt this work.
           if (data.error)
             $("#acc_content").html("<p>[Could not load]<\/p>" + content_url);
           else {
             var article = "<a href='"+data.canonicalLink+"'><h1>"+data.title+"<\/h1><\/a>";
-            article += "<img class='acc_article' src="+data.image+"><\/img>";
+            if (data.image != null)
+              article += "<img class='acc_article' src="+data.image+"><\/img>";
             // break article up by periods...
             var sentences = data.text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
             for (var i=0; i<sentences.length; i++)
@@ -190,7 +195,7 @@ var PostItem = function(elem){
 
 var GenericItem = function(elem, select_callback){
   Item.call(this, elem);
-  this.focus = (container) => {
+  this.focus = (container, reload) => {
     scrollTo(this.elem, container);
     $(this.elem).addClass("acc_focused");
     acc_speak($(this.elem).text());
@@ -228,7 +233,7 @@ var Context = function(parent, items, container){
   this.next = () => {
     if (this.index + 1 < this.items.length ){
       var itm = this.items[this.index+1];
-      this.goto(itm);
+      this.goto(itm, true);
       
     } else if ( this.items.length > 0 ) {
       // TODO: wrap around.
@@ -240,7 +245,7 @@ var Context = function(parent, items, container){
   this.previous = () => {
     if (this.index - 1 >= 0 ){
       var itm = this.items[this.index-1];
-      this.goto(itm);
+      this.goto(itm, true);
 
     } else if ( this.items.length > 0 ) {
       this.goto(this.items[this.items.length - 1]);
@@ -256,12 +261,12 @@ var Context = function(parent, items, container){
     // Swap back to parent context.
     window.cursor.switch_context(this.parent);
     this.current.unfocus();
-    this.parent.goto(this.parent.current);
+    this.parent.goto(this.parent.current, false);
   }
-  this.goto = (item) => {
+  this.goto = (item, reload) => {
     this.current.unfocus();
     this.current = item;
-    this.current.focus(this.container);
+    this.current.focus(this.container, reload);
     this.index = $.inArray(item, this.items);
   }
   this.getItemByElem = (elem) => {
@@ -283,7 +288,7 @@ var Context = function(parent, items, container){
         // get the item.
         var elem = eventObject.currentTarget;
         var itm = this.getItemByElem(elem);
-        this.goto(itm);
+        this.goto(itm, true);
       });
     }
   }
@@ -296,7 +301,7 @@ var PostContext = function(parent, items, container){
     this.current.unfocus();
     if ( $(this.current.elem).hasClass('link') ){
       window.cursor.switch_context(this.menu_subcontext);
-      this.menu_subcontext.goto(this.menu_subcontext.items[0]);
+      this.menu_subcontext.goto(this.menu_subcontext.items[0], true);
     }
   }
 
@@ -373,7 +378,7 @@ var PostMenuContext = function(parent, items, container){
 
     // Change the focus.
     this.current.unfocus();
-    comment_ctx.goto(comment_ctx.current);
+    comment_ctx.goto(comment_ctx.current,true);
 
     maximize_comments();
   }
@@ -385,7 +390,7 @@ var PostMenuContext = function(parent, items, container){
     window.cursor.switch_context(post_body_ctx);
     // change the focus
     this.current.unfocus();
-    post_body_ctx.goto(post_body_ctx.current);
+    post_body_ctx.goto(post_body_ctx.current, true);
     maximize_content();
   }
 
@@ -412,7 +417,7 @@ var CommentContext = function(parent, items, container){
     console.debug("SELECTED COMMENT");
     this.current.unfocus();
     window.cursor.switch_context(this.parent);
-    this.parent.goto(this.parent.current);
+    this.parent.goto(this.parent.current, true);
     minimize_comments();
   }
 
@@ -448,7 +453,7 @@ var PostBodyContext = function(parent, items, container){
     console.debug("SELECTED POST");
     this.current.unfocus();
     window.cursor.switch_context(this.parent);
-    this.parent.goto(this.parent.current);
+    this.parent.goto(this.parent.current, true);
     minimize_content();
   }
   Context.call(this, parent, items, container);
@@ -527,7 +532,7 @@ function subreddit_init(){
   // Setup nagivation handlers.
   var ctx = new PostContext(null, post_items, $("#siteTable"));
   window.cursor = new Cursor(ctx);
-  ctx.goto(ctx.current);
+  ctx.goto(ctx.current, true);
 }
 
 function choose_init(){
@@ -545,7 +550,7 @@ function choose_init(){
   // Setup nagivation handlers.
   var ctx = new SubredditContext(null, subreddit_items, $("#siteTable"));
   window.cursor = new Cursor(ctx);
-  ctx.goto(ctx.current);
+  ctx.goto(ctx.current, true);
 }
 
 /* 
@@ -600,6 +605,8 @@ function remove_choose_elements(){
   $(".menuarea").remove();
   $(".infobar").remove();
   $(".midcol").remove();
+  $(".searchpane").remove();
+  $(".sr-interest-bar").remove();
 }
 
 function scrollTo(elem, parent_container) {
@@ -694,15 +701,12 @@ function minimize_content(){
   var init_func;
   var page;
   var path = window.location.pathname;
-  switch (path){
-    case "/subreddits/mine":
-      init_func = choose_init;
-      page = "choose";
-      break;
-    default:
-      init_func = subreddit_init;
-      page = "subreddit";
-      break;
+  if (path.indexOf("/subreddits") >= 0){
+    init_func = choose_init;
+    page = "choose";
+  } else {
+    init_func = subreddit_init;
+    page = "subreddit";
   }
   // Ask the background if the app is enabled...
   chrome.runtime.sendMessage({query: "checkEnabled", page: page}, function(response) {
