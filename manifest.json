@@ -17,6 +17,7 @@
       "js": [
         "/lib/jquery.js", 
         "/lib/reddit.js",
+        "/lib/spin.min.js",
         "content_script.js"
       ],
       "run_at": "document_end"

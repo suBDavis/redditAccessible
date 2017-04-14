@@ -106,6 +106,9 @@ var PostItem = function(elem){
   this.handle_external_content = (content_domain, content_url) => {
     // Returns HTML which should be dumped into the content window.
     var extension = content_url.substr(content_url.lastIndexOf('.')+1);
+    if (extension.indexOf(':')>=0)
+      extension = extension.substr(0, extension.indexOf(":"));
+    var spinner = new Spinner({top: '20%', scale: 2.5}).spin();
 
     // YOUTUBE
     if ( $.inArray(content_domain, YOUTUBE_DOMAINS) >= 0 ){
@@ -150,7 +153,7 @@ var PostItem = function(elem){
           $("#acc_content").html("<h1>Twitter: <\/h1>" + data.html);
         }
       });
-      $("#acc_content").text("[LOADING TWEET...]");
+      $("#acc_content").html(spinner.el);
     // GFYCAT
     } else if ($.inArray(content_domain, GFYCAT_DOMAINS) >= 0) {
       var path = url_to_a(content_url).pathname;
@@ -188,7 +191,7 @@ var PostItem = function(elem){
           console.error(e);
         }
       });
-      $("#acc_content").html("<p>[LOADING CONTENT....] <\/p>" + content_url);
+      $("#acc_content").html(spinner.el);
     }
   }
 };
