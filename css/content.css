@@ -9,8 +9,10 @@ body.listing-page {
   margin: 0px;
   background-color: #5E5E5E;
 }
-body .content {
+body.listing-page>div.content {
   margin-top: 0px;
+  background-color: transparent;
+  box-shadow: initial;
 }
 body .content .spacer {
   margin-bottom: 0px;

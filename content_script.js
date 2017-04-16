@@ -108,6 +108,8 @@ var PostItem = function(elem){
     var extension = content_url.substr(content_url.lastIndexOf('.')+1);
     if (extension.indexOf(':')>=0)
       extension = extension.substr(0, extension.indexOf(":"));
+    if (extension.indexOf('?')>-0)
+      extension = extension.substr(0, extension.indexOf('?'));
     var spinner = new Spinner({top: '20%', scale: 2.5}).spin();
 
     // YOUTUBE
@@ -595,6 +597,7 @@ function remove_elements(){
   $(".listing-chooser").remove(); // right gripper thing
   $(".organic-listing").remove(); // promoted links
   $(".nextprev .separator").remove(); // stupid separator between 'prev' and 'next'
+  $("#siteTable::before").css('display', 'none');
 
   var children = $(".nextprev").children('span');
   $(".nextprev").html(children); // text around next button
