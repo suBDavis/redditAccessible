@@ -1,7 +1,63 @@
 <html>
 <head>
   <title>RedditAccessible</title>
+  <style>
+    body {
+      margin-bottom: 80px;
+    }
+    p, a {
+      font-size: 24px;
+    }
+    h1 {
+      font-size: 40px;
+    }
+    .button {
+      padding: 10px;
+      margin: 10px 0px;
+      margin-right: 20px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .install {
+      border: 3px solid green;
+      background-color: lightgreen;
+    }
+    .source {
+      border: 3px solid blue;
+      background-color: lightblue;
+    }
+    .content-container {
+      width: 70%;
+      margin: 0 auto;
+    }
+    @media screen and (max-width: 1024px) {
+      .content-container {
+        width: 90%;
+      }
+    }
+  </style>
 </head>
-  <h1>Reddit Accessible</h1>
-  <a href="https://chrome.google.com/webstore/detail/redditaccessible/dlpdmegojijbaghnccgdcaahlmcoiipp?hl=en-US&gl=US">Install Reddit Accessible.</a>
+  <div class="content-container">
+    <h1>Reddit Accessible</h1>
+    <p>This extension seeks to make the reddit.com interface more accessible to switch users, the visually impaired, and anyone who has difficulty with the traditional interface.</p>
+    <p>redditAccessible loads content from external links and displays them in the page.  It can load images, videos, embedded Tweets, and even fetches text from article links so that the user can view content from many sources in an accessible interface.</p>
+    <a class="button install" href="https://chrome.google.com/webstore/detail/redditaccessible/dlpdmegojijbaghnccgdcaahlmcoiipp?hl=en-US&gl=US">Install Reddit Accessible From Google Web Store</a>
+    <a class="button source" href="https://github.com/suBDavis/redditAccessible">Download Source Code</a>
+    
+    <h1>Screenshots</h1>
+    <a href="http://i.imgur.com/FgbSedT.png">
+      <img src="http://i.imgur.com/FgbSedT.png" width=100%/>
+    </a>
+    <p>Screenshot of /r/space</p>
+    <a href="http://i.imgur.com/Q1ZQObd.png">
+      <img src="http://i.imgur.com/Q1ZQObd.png" width=100%/>
+    </a>
+    <p>Screenshot of /subreddits/mine</p>
+    <h1>Contribute or Report Problems</h1>
+    <p>redditAccessible is open source, and began as a project by students at The University of North Carolina at Chapel Hill.</p>
+    <a href="https://github.com/suBDavis/redditAccessible/issues">Request a feature or report a bug.</a>
+    <br><br>
+    <a href="https://github.com/suBDavis/redditAccessible">Fork or pull request.</a>
+    <p>Contact: brandon [at] subdavis [dot] com</p>
+  </div>
 </html>
