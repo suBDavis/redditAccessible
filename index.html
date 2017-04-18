@@ -1,6 +1,7 @@
 <html>
 <head>
   <title>RedditAccessible</title>
+  <link rel="icon" href="icon.png">
   <style>
     body {
       margin: 40px 0px;
@@ -14,6 +15,7 @@
     h1 {
       font-size: 40px;
       line-height: 1.0;
+      width: 100%;
     }
     .button {
       padding: 10px;
@@ -35,10 +37,10 @@
       background-color: lightyellow;
     }
     .content-container {
-      width: 55%;
+      width: 800px;
       margin: 0 auto;
     }
-    @media screen and (max-width: 1024px) {
+    @media screen and (max-width: 800px) {
       .content-container {
         width: 90%;
       }
@@ -47,7 +49,7 @@
 </head>
   <div class="content-container">
   
-    <h1>Reddit Accessible</h1>
+    <h1><img src="icon.png"> Reddit Accessible</h1>
     <p>This extension seeks to make the reddit.com interface more accessible to switch users, the visually impaired, and anyone who has difficulty with the traditional interface.  It can be used with just two buttons -- Next (TAB) and Select (ENTER)</p>
     <p>Reddit Accessible loads content from external links and displays them in the page.  It can load images, videos, embedded Tweets, and even fetches text from article links so that the user can view content from many sources in an accessible interface.</p>
     <a class="button install" href="https://chrome.google.com/webstore/detail/redditaccessible/dlpdmegojijbaghnccgdcaahlmcoiipp?hl=en-US&gl=US">Install Reddit Accessible From Google Web Store</a>
