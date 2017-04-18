@@ -25,13 +25,18 @@
       color: black;
       display: inline-block;
     }
+    img.screenshot {
+      box-shadow: 10px 10px 5px #ccc;
+      /*border: 10px solid #236863;*/
+      border-radius: 10px;
+    }
     .install {
       border: 3px solid #0A4600;
-      background-color: #64B058;
+      background-color: #97D38D;
     }
     .source {
       border: 3px solid #236863;
-      background-color: #689D99;
+      background-color: #699D99;
     }
     .problem {
       border: 3px solid #530006;
@@ -50,26 +55,26 @@
 </head>
   <div class="content-container">
   
-    <h1><img src="icon.png"> Reddit Accessible</h1>
+    <h1 id="title"><img src="icon.png"> Reddit Accessible</h1>
     <p>This extension seeks to make the reddit.com interface more accessible to switch users, the visually impaired, and anyone who has difficulty with the traditional interface.  It can be used with just two buttons -- Next (TAB) and Select (ENTER)</p>
     <p>Reddit Accessible loads content from external links and displays them in the page.  It can load images, videos, embedded Tweets, and even fetches text from article links so that the user can view content from many sources in an accessible interface.</p>
     <a class="button install" href="https://chrome.google.com/webstore/detail/redditaccessible/dlpdmegojijbaghnccgdcaahlmcoiipp?hl=en-US&gl=US">Install Reddit Accessible From Google Web Store</a>
     <a class="button source" href="https://github.com/suBDavis/redditAccessible">Download Source Code</a>
     <a class="button problem" href="https://github.com/suBDavis/redditAccessible/issues">Report a Problem</a>
     
-    <h1>Screenshots</h1>
-    <img src="https://i.imgur.com/FgbSedT.png" alt="Screenshot of reddit slash r slash space" width=100%/>
+    <h1 id="screenshots">Screenshots</h1>
+    <img class="screenshot" src="https://i.imgur.com/FgbSedT.png" alt="Screenshot of reddit slash r slash space" width=100%/>
     <p>screenshot of /r/space - comments, content, and posts are all in one interface</p>
-    <img src="https://i.imgur.com/Q1ZQObd.png" alt="Screenshot of sub reddit subscription page slash subreddits slash mine" width=100%/>
+    <img class="screenshot" src="https://i.imgur.com/Q1ZQObd.png" alt="Screenshot of sub reddit subscription page slash subreddits slash mine" width=100%/>
     <p>screenshot of /subreddits/mine - select a subreddit to read from your subscriptions</p>
 
-    <h1>Contribute</h1>
+    <h1 id="contribute">Contribute</h1>
     <p>Reddit Accessible is open source, and began as a project by students at The University of North Carolina at Chapel Hill.  We use GitHub for source control, and contributions are welcome.</p>
     <ul>
       <li>
         <a href="https://github.com/suBDavis/redditAccessible">Clone or Pull Request</a>
       </li>
-      <li>Contact: brandon<span style="display:none;">GET OUT OF HERE, SPAMMERS!!</span>[at] subdavis [dot] com</li>
+      <li>Contact: brandon <span style="display:none;">GET OUT OF HERE, SPAMMERS!!</span>[at] subdavis [dot] com</li>
     </ul>
   </div>
 </html>
