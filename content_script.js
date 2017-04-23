@@ -15,6 +15,7 @@ const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
 const BACK_KEYS = [38];
 
 // The only global variable!!!
+// NO MORE GLOBAL VARIABLES!!!
 window.cursor = null;
 
 /*
@@ -36,13 +37,13 @@ var Item = function(elem){
 var PostItem = function(elem){
   Item.call(this, elem);
 
-  this.focus = (container, reload) => {
+  this.focus = (container, reload, post_success, comment_success) => {
     scrollTo(this.elem, container);
     $(this.elem).addClass("acc_focused");
     var title = $(this.elem).find(".title a").first().text();
     acc_speak(title);
     if (reload){
-      this.show_details(get_subreddit(), this);
+      this.show_details(post_success, comment_success);
     }
   }
   this.unfocus = () => {
@@ -52,7 +53,7 @@ var PostItem = function(elem){
   this.select = () => {
     // POST ITEM has no select functionality.
   }
-  this.show_details = () => {
+  this.show_details = (post_success,comment_success) => {
     var post = this.elem;
     var subreddit = get_subreddit();
     // Get post identifier...
@@ -67,13 +68,13 @@ var PostItem = function(elem){
       var title = data[0].data.children[0].data.title;
       console.debug("Comment JSON loaded... " + title);
       
-      // REDDIT TEXT TYPE
+      // REDDIT TEXT TYPE 
       if (data_domain == "self."+subreddit){
         // IF TEXT POST, comment data will contain the text post as well...
         var html_post = data[0].data.children[0].data.selftext_html;
         var decoded = decodeEntities(html_post);
         $("#acc_content").html((decoded) ? decoded : "[EMPTY - no content body]");
-      
+        post_success();
       // REDDIT IMAGE TYPE
       } else if ( $.inArray(data_domain, REDDIT_IMAGE_DOMAINS) >= 0 ){
         var content_url = data[0].data.children[0].data.url;
@@ -81,11 +82,11 @@ var PostItem = function(elem){
           content_url = content_url.replace('&amp;', '&');
         var html_post = "<img src='"+content_url+"'><\/img>";
         $("#acc_content").html(html_post);
-      
+        post_success();
       // SOMETHING ELSE
       } else {
         var content_url = data[0].data.children[0].data.url;
-        this.handle_external_content(data_domain, content_url);
+        this.handle_external_content(data_domain, content_url, post_success);
       }
 
       // load up to 10 top level comments
@@ -101,9 +102,10 @@ var PostItem = function(elem){
         html_comment = $(decodeEntities(html_comment)).addClass('acc_hoverable acc_comment')
         $("#acc_comments").append(html_comment);
       }
+      comment_success();
     });
   }
-  this.handle_external_content = (content_domain, content_url) => {
+  this.handle_external_content = (content_domain, content_url, post_success) => {
     // Returns HTML which should be dumped into the content window.
     var extension = content_url.substr(content_url.lastIndexOf('.')+1);
     if (extension.indexOf(':')>=0)
@@ -121,11 +123,11 @@ var PostItem = function(elem){
         src='https:\/\/www.youtube.com/embed/"+video_id+"?autoplay=1&origin=http:\/\/www.reddit.com' \
         frameborder='0'><\/iframe>";
       $("#acc_content").html(embed);
-    
+      post_success();
     // GENERAL IMAGE
     } else if ($.inArray( extension, IMAGE_EXTENSIONS ) >= 0) {  
       $("#acc_content").html("<img src='"+content_url+"'><\/img>");
-    
+      post_success();
     // GENERAL VIDEO FORMAT
     } else if ($.inArray( extension, VIDEO_EXTENSIONS ) >= 0) {
       if (extension == 'gifv'){
@@ -138,13 +140,13 @@ var PostItem = function(elem){
           <source src="'+content_url+'" type="video/'+extension+'"></source> \
         </video>';
       $("#acc_content").html(embed);
-    
+      post_success();
     // IMGUR DOMAIN NO EXTENSION
     } else if ($.inArray(content_domain, IMGUR_DOMAINS) >= 0 ) {
       var post_id = url_to_a(content_url).pathname;
       $("#acc_content").html("<img src='http://i.imgur.com/"+post_id+".gif'><\/img>"); // gif will always display.
       // TODO: Embed album types...
-
+      post_success();
     // EMBEDDED TWEET
     } else if ($.inArray(content_domain, TWITTER_DOMAINS) >= 0 ) {
       // Load the tweet from the oEmbed endpoint
@@ -153,6 +155,7 @@ var PostItem = function(elem){
         url: TWITTER_FETCHER + "?url=" + content_url,
         success: function(data){
           $("#acc_content").html("<h1>Twitter: <\/h1>" + data.html);
+          post_success();
         }
       });
       $("#acc_content").html(spinner.el);
@@ -167,7 +170,7 @@ var PostItem = function(elem){
     // ACCEPTABLE IFRAME
     } else if ($.inArray(content_domain, IFRAME_DOMAINS) >= 0) {
       $("#acc_content").html("<iframe type='text/html' height='100%' width='100%' frameborder='0' scrolling='no' allowfullscreen src='"+content_url+"'><\/iframe>");
-    
+      post_success();
     // HAIL MARY - TRY UNFLUFF
     } else {
       $.ajax({
@@ -188,9 +191,11 @@ var PostItem = function(elem){
               article += "<p>" + sentences[i] + "<\/p>";
             $("#acc_content").html(article);
           }
+          post_success();
         },
         error: function(e){
           console.error(e);
+          post_success();
         }
       });
       $("#acc_content").html(spinner.el);
@@ -269,9 +274,14 @@ var Context = function(parent, items, container){
     this.parent.goto(this.parent.current, false);
   }
   this.goto = (item, reload) => {
-    this.current.unfocus();
+    // Verify that the cursor is up to date with the context.
+    window.cursor.current_context.current.unfocus(); // Universally unfocus
+    window.cursor.switch_context(this);
     this.current = item;
-    this.current.focus(this.container, reload);
+    if (typeof this.unique_handle_focus === "function")
+      this.unique_handle_focus(item, this.container, reload);
+    else
+      this.current.focus(this.container, reload);
     this.index = $.inArray(item, this.items);
   }
   this.getItemByElem = (elem) => {
@@ -285,22 +295,45 @@ var Context = function(parent, items, container){
   }
 
   // SETUP CLICK HANDLERS FOR GENERAL OBJECTS
+  // Expose this function such that if subclasses add more items, they can call it again to setup click handlers.
   this.setup_click_handers = () => {
     console.debug("Setup click handlers");
     for (var i =0; i < this.items.length; i++){ 
       $(this.items[i].elem).off('click');
       $(this.items[i].elem).click((eventObject) => {
         // get the item.
+        console.log(eventObject);
         var elem = eventObject.currentTarget;
         var itm = this.getItemByElem(elem);
         this.goto(itm, true);
       });
     }
   }
-  this.setup_click_handers();
+  this.setup_click_handers(); 
 }
 
 var PostContext = function(parent, items, container){
+
+  // <nonsense>
+  // This nonsense is here because
+  // we need to build the entire context tree every time the 
+  // post changes, and to do that we have to wait until all the AJAX
+  // callback hell is done.
+  this.post_done = false;
+  this.comment_done = false;
+
+  this.post_success = () => {
+    if (this.comment_done)
+      this.menu_subcontext = new PostMenuContext(this, [], $("#acc_content_menu").first());
+    this.post_done = true;
+  }
+
+  this.comment_success = () => {
+    if (this.post_done)
+      this.menu_subcontext = new PostMenuContext(this, [], $("#acc_content_menu").first());
+    this.comment_done = true;
+  }
+  // </nonsense>
 
   this.unique_handle_select = () => {
     this.current.unfocus();
@@ -308,6 +341,10 @@ var PostContext = function(parent, items, container){
       window.cursor.switch_context(this.menu_subcontext);
       this.menu_subcontext.goto(this.menu_subcontext.items[0], true);
     }
+  }
+
+  this.unique_handle_focus = (item_to_focus, container, reload) => {
+    item_to_focus.focus(container, reload, this.post_success, this.comment_success)
   }
 
   // Do a few more things before calling the constructor.
@@ -351,7 +388,6 @@ var PostContext = function(parent, items, container){
         <button class='acc_menu_button' id='menuChangeSubreddit'>🌐 Change Subreddit</button> \
       </div>";
     $("#acc_wrapper").append(menu_section);
-    this.menu_subcontext = new PostMenuContext(this, [], $("#acc_content_menu").first());
   })(get_subreddit());
 
   this.setup_click_handers(); // Do this again, since there are new items that need click handlers...
@@ -359,52 +395,60 @@ var PostContext = function(parent, items, container){
 
 var PostMenuContext = function(parent, items, container){
   // Do a few more things before calling the constructor.
+  this.comment_ctx = null;
+  this.post_body_ctx = null;
 
-  this.unique_handle_select = () => {
-    return false;
-  }
+  // Unimplemented, because each button has a different behavior...
+  this.unique_handle_select = () => {}
 
-  this._create_comment_context = () => {
-    // RUN WHEN COMMENTS ARE SELECTED.
-
-    // Create the comment contexts...
+  // Create the comment contexts...
+  this._create_comment_context = ()=>{
     var comments = $(".acc_comment");
     var comment_items = [];
     for (var i = 0; i < comments.length; i++){
-      comment_items.push(new GenericItem(comments[i], (event)=>{}));
+      $(comments[i]).attr('id', i);
+      comment_items.push(new GenericItem(comments[i], (event)=>{
+        // ON SELECT
+      }));
     }
-    if (comment_items.length == 0){
-      console.debug(comment_items.length);
-      acc_speak("There are no comments");
-      return;
-    }
-    var comment_ctx = new CommentContext(this, comment_items, $("#acc_comments"));
-    window.cursor.switch_context(comment_ctx);
+    this.comment_ctx = new CommentContext(this, comment_items, $("#acc_comments"));
+  };
+  this._create_comment_context();
 
-    // Change the focus.
+  this._select_comment_context = () => {
+    // if (this.comment_ctx.items.length == 0){
+    //   console.debug(comment_items.length);
+    //   acc_speak("There are no comments");
+    //   return;
+    // }
+    // window.cursor.switch_context(this.comment_ctx);
     this.current.unfocus();
-    comment_ctx.goto(comment_ctx.current,true);
-
+    this.comment_ctx.goto(this.comment_ctx.current,true);
     maximize_comments();
   }
   
+  // Create the post body context...
   this._create_post_body_context = () => {
     var post = $("#acc_content");
     var post_body_itm = new GenericItem(post, (event)=>{});
-    var post_body_ctx = new PostBodyContext(this, [post_body_itm], post);
-    window.cursor.switch_context(post_body_ctx);
+    this.post_body_ctx = new PostBodyContext(this, [post_body_itm], post);
+  };
+  this._create_post_body_context();
+
+  this._select_post_body_context = () => {
+    // window.cursor.switch_context(this.post_body_ctx);
     // change the focus
     this.current.unfocus();
-    post_body_ctx.goto(post_body_ctx.current, true);
+    this.post_body_ctx.goto(this.post_body_ctx.current, true);
     maximize_content();
   }
 
   var items = [
     new GenericItem($("#menuReadComments"), (event)=>{
-      this._create_comment_context();
+      this._select_comment_context();
     }),
     new GenericItem($("#menuReadContent"), (event)=>{
-      this._create_post_body_context();
+      this._select_post_body_context();
     }),
     new GenericItem($("#menuGoBack"), (event)=>{
       this.ascend();
@@ -423,7 +467,11 @@ var CommentContext = function(parent, items, container){
     this.current.unfocus();
     window.cursor.switch_context(this.parent);
     this.parent.goto(this.parent.current, true);
-    minimize_comments();
+  }
+
+  this.unique_handle_focus = (item_to_focus, container, reload) => {
+    item_to_focus.focus(container, reload);
+    maximize_comments();
   }
 
   Context.call(this, parent, items, container);
@@ -459,7 +507,10 @@ var PostBodyContext = function(parent, items, container){
     this.current.unfocus();
     window.cursor.switch_context(this.parent);
     this.parent.goto(this.parent.current, true);
-    minimize_content();
+  }
+  this.unique_handle_focus = (item_to_focus, container, reload) => {
+    item_to_focus.focus(container, reload);
+    maximize_content();
   }
   Context.call(this, parent, items, container);
 }
@@ -472,6 +523,26 @@ var Cursor = function(context){
   */
 
   this.switch_context = (new_context) => {
+    /*
+      When switching context, check if we need to reset the view.
+    */
+    
+
+    if (this.current_context instanceof CommentContext 
+      && (new_context != this.current_context)){
+      console.log("Switching context...");
+      // Moving into Comment Section
+      minimize_comments();
+    } else if (this.current_context instanceof PostBodyContext 
+      && (new_context != this.current_context)){
+      // Moving into Post Body
+      minimize_content();
+    } else {
+      // Do nothing....
+    }
+    /* 
+      Now set up the rest of the internal state..
+    */
     this.current_context = new_context;
     this.next = this.current_context.next;
     this.previous = this.current_context.previous;
@@ -680,6 +751,10 @@ function minimize_content(){
   $("#acc_content").animate({
     height: "44vh"
   },{duration: 200, queue: false});
+}
+function reset_content_windows(){
+  minimize_comments();
+  minimize_content();
 }
 
 /*
