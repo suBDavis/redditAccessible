@@ -416,12 +416,10 @@ var PostMenuContext = function(parent, items, container){
   this._create_comment_context();
 
   this._select_comment_context = () => {
-    // if (this.comment_ctx.items.length == 0){
-    //   console.debug(comment_items.length);
-    //   acc_speak("There are no comments");
-    //   return;
-    // }
-    // window.cursor.switch_context(this.comment_ctx);
+    if (this.comment_ctx.items.length == 0){
+      acc_speak("There are no comments");
+      return;
+    }
     this.current.unfocus();
     this.comment_ctx.goto(this.comment_ctx.current,true);
     maximize_comments();
@@ -430,7 +428,8 @@ var PostMenuContext = function(parent, items, container){
   // Create the post body context...
   this._create_post_body_context = () => {
     var post = $("#acc_content");
-    var post_body_itm = new GenericItem(post, (event)=>{});
+    var post_body_itm = new GenericItem(post, (event)=>{
+    });
     this.post_body_ctx = new PostBodyContext(this, [post_body_itm], post);
   };
   this._create_post_body_context();
