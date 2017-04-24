@@ -186,7 +186,7 @@ var PostItem = function(elem){
             if (data.image != null)
               article += "<img class='acc_article' src="+data.image+"><\/img>";
             // break article up by periods...
-            var sentences = data.text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|");
+            var sentences = data.text.replace(/([a-z][a-z][a-z][.?!])\s*(?=[A-Z])/g, "$1|").split("|");
             for (var i=0; i<sentences.length; i++)
               article += "<p>" + sentences[i] + "<\/p>";
             $("#acc_content").html(article);
