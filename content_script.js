@@ -426,13 +426,7 @@ var PostMenuContext = function(parent, items, container){
   }
   
   // Create the post body context...
-  this._create_post_body_context = () => {
-    var post = $("#acc_content");
-    var post_body_itm = new GenericItem(post, (event)=>{
-    });
-    this.post_body_ctx = new PostBodyContext(this, [post_body_itm], post);
-  };
-  this._create_post_body_context();
+  this.post_body_ctx = new PostBodyContext(this, [], $("#acc_content"));
 
   this._select_post_body_context = () => {
     // window.cursor.switch_context(this.post_body_ctx);
@@ -500,7 +494,10 @@ var SubredditContext = function(parent, items, container){
 }
 
 var PostBodyContext = function(parent, items, container){
-
+  /* 
+    By the time this is called, the post body has been loaded and
+    We can look at it to see how it should behave
+  */
   this.unique_handle_select = () => {
     console.debug("SELECTED POST");
     this.current.unfocus();
@@ -511,7 +508,28 @@ var PostBodyContext = function(parent, items, container){
     item_to_focus.focus(container, reload);
     maximize_content();
   }
-  Context.call(this, parent, items, container);
+  this.find_items = (container) => {
+    // returns the item list in the post body, or none.
+    var paragraphs = $(container).find('p');
+    console.log(paragraphs);
+    if (paragraphs.length > 0){
+      console.log("Paragraphs found in body");
+      var paragraph_items = [];
+      for (var i = 0; i<paragraphs.length; i++){
+        paragraph_items.push(new GenericItem(paragraphs[i], (event)=>{
+          this.unique_handle_select();
+        }));
+      }
+      // if there are iterable paragraphs, 
+      // we need to remove the clickability of the parent container
+      $(container).off('click');
+      return paragraph_items;
+    } else {
+      // This is not an iterable.
+      return [new GenericItem(container, (event)=>{})];
+    }
+  }
+  Context.call(this, parent, this.find_items(container), container);
 }
 
 var Cursor = function(context){
@@ -525,7 +543,6 @@ var Cursor = function(context){
     /*
       When switching context, check if we need to reset the view.
     */
-    
 
     if (this.current_context instanceof CommentContext 
       && (new_context != this.current_context)){
@@ -669,7 +686,7 @@ function remove_elements(){
   $(".nextprev .separator").remove(); // stupid separator between 'prev' and 'next'
   $("#siteTable::before").css('display', 'none');
 
-  var children = $(".nextprev").children('span');
+  var children = $(".nextprev");
   $(".nextprev").html(children); // text around next button
   $(".link .entry .title a").click(function(e){
     // Disable all links. We aren't going to use them.

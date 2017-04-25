@@ -159,6 +159,11 @@ body .content .spacer {
   background-color: #bad4ff;
   border: 3px solid blue;
 }
+#acc_content p.acc_focused {
+  background-color: #bad4ff;
+  border: initial;
+  border-radius: 8px;
+}
 /*
 Custom Scrolling
 */
