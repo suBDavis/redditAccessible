@@ -406,7 +406,7 @@ var PostMenuContext = function(parent, items, container){
     var comments = $(".acc_comment");
     var comment_items = [];
     for (var i = 0; i < comments.length; i++){
-      $(comments[i]).attr('id', i);
+      $(comments[i]).attr('id', "acc_comment_"+i);
       comment_items.push(new GenericItem(comments[i], (event)=>{
         // ON SELECT
       }));
@@ -516,19 +516,21 @@ var PostBodyContext = function(parent, items, container){
       console.log("Paragraphs found in body");
       var paragraph_items = [];
       for (var i = 0; i<paragraphs.length; i++){
+        $(paragraphs[i]).attr('id', "acc_paragraph_"+i);
         paragraph_items.push(new GenericItem(paragraphs[i], (event)=>{
           this.unique_handle_select();
         }));
       }
-      // if there are iterable paragraphs, 
-      // we need to remove the clickability of the parent container
-      $(container).off('click');
+      // if there are iterable paragraphs,
       return paragraph_items;
     } else {
       // This is not an iterable.
       return [new GenericItem(container, (event)=>{})];
     }
   }
+  // we need to remove the clickability of the parent container
+  $(container).off('click');
+  // Invoke the superconstructor.
   Context.call(this, parent, this.find_items(container), container);
 }
 
@@ -686,7 +688,7 @@ function remove_elements(){
   $(".nextprev .separator").remove(); // stupid separator between 'prev' and 'next'
   $("#siteTable::before").css('display', 'none');
 
-  var children = $(".nextprev");
+  var children = $(".nextprev").children();
   $(".nextprev").html(children); // text around next button
   $(".link .entry .title a").click(function(e){
     // Disable all links. We aren't going to use them.
