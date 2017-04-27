@@ -63,6 +63,10 @@ var PostItem = function(elem){
 
     // load the comments 
     var comment_url = "/r/" + subreddit + "/comments/" + post_id + ".json";
+    if (subreddit == "front_page") {
+      comment_url = "/" + post_id + ".json";
+    }
+    console.log(subreddit);
     $.getJSON(comment_url, (data) => {
       // Data received...  display comments.
       var title = data[0].data.children[0].data.title;
