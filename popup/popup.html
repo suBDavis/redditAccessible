@@ -22,7 +22,6 @@
     button.clickbutton:hover {
       background-color: #bad4ff;
     }
-    
     button.colorbutton {
       border-radius: 50%;
       width: 40px;
@@ -37,14 +36,16 @@
     button.colorbutton.blue {
       background-color: #699D99;
     }
-    
+    button.colorbutton.gray {
+      background-color: #5E5E5E;
+    }
     h2 {
       text-align: center;
       font-size: 26px;
       margin-top: 20px;
     }
     input {
-      display: inline-block;
+      display: inline;
     }
     #snoo {
       display: block;
@@ -61,10 +62,11 @@
   <button class="clickbutton" id="changeSubreddit">Pick Subreddit</button>
   <button class="clickbutton" id="tutorial">Tutorial</button>
   
+  <button class="colorbutton gray" id="colorGray">&nbsp;</button>
   <button class="colorbutton red" id="colorRed">&nbsp;</button>
   <button class="colorbutton green" id="colorGreen">&nbsp;</button>
   <button class="colorbutton blue" id="colorBlue">&nbsp;</button>
   
-  <img id="snoo" width="64px" height="auto" src="/img/snoo.png">
+  <img id="snoo" width="72px" height="auto" src="/img/snoo.png">
 </body>
 </html>
