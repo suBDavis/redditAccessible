@@ -11,7 +11,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.reddit.com/r/*",
+        "https://www.reddit.com/",
+	"https://www.reddit.com/r/*",
         "https://www.reddit.com/subreddits*"
       ],
       "js": [
