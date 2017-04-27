@@ -86,5 +86,7 @@ function update_from_local(argument) {
         window.app_enabled = items.accessibleReddit_enabled;
       if (items.accessibleReddit_speechEnabled != null)
         window.speech_enabled = items.accessibleReddit_speechEnabled;
+      if (items.accessibleReddit_bgcolor != null)
+        window.color = items.accessibleReddit_bgcolor;
   });
 }
