@@ -6,13 +6,14 @@ const IFRAME_DOMAINS = ['flic.kr', 'flickr.com', 'xkcd.com']; // for these urls,
 const YOUTUBE_DOMAINS = ['youtube.com', 'youtu.be', 'm.youtube.com'];
 const TWITTER_DOMAINS = ['twitter.com', 'mobile.twitter.com'];
 const GFYCAT_DOMAINS = ['gfycat.com'];
-const IMGUR_DOMAINS = ['imgur.com']; // IMGUR without extension...
+const IMGUR_DOMAINS = ['imgur.com'];  // IMGUR without extension...
 const CHANGE_REDDIT_URL = "https://reddit.com/subreddits/mine";
+const GENERAL_SUBREDDIT_URL = "https://reddit.com/subreddits";
 const UNFLUFF_SERVER = "https://unfluff.subdavis.com:8443/unfluff";
 const TWITTER_FETCHER = "https://unfluff.subdavis.com:8443/twitter";
 const NEXT_SWITCH_KEYS = [39, 40, 9]; // RIGHT, DOWN, TAB
-const SELECT_SWITCH_KEYS = [13, 37]; // ENTER, LEFT
-const BACK_KEYS = [38];
+const SELECT_SWITCH_KEYS = [13, 37];  // ENTER, LEFT
+const BACK_KEYS = [38];               // UP
 
 // The only global variable!!!
 // NO MORE GLOBAL VARIABLES!!!
@@ -407,9 +408,7 @@ var PostMenuContext = function(parent, items, container){
     var comment_items = [];
     for (var i = 0; i < comments.length; i++){
       $(comments[i]).attr('id', "acc_comment_"+i);
-      comment_items.push(new GenericItem(comments[i], (event)=>{
-        // ON SELECT
-      }));
+      comment_items.push(new GenericItem(comments[i], (event)=>{} ));
     }
     this.comment_ctx = new CommentContext(this, comment_items, $("#acc_comments"));
   };
@@ -617,9 +616,16 @@ function subreddit_init(){
   remove_elements();
   // Parse posts.
   var posts = $(".thing");
+  
+  // If no post items were discovered, we can assume the user was not logged in.  Redirect to /subreddits
+  if (posts.length <= 0)
+    window.location.href = GENERAL_SUBREDDIT_URL;
+  
+  // Otherwise, populate the page...
   var post_items = []; 
   for (var i = 0; i < posts.length; i++)
     post_items.push(new PostItem(posts[i]));
+  
   // Add the ABOUT section as a post on the first page.
   var about = $(".usertext-body");
   
@@ -695,6 +701,7 @@ function remove_elements(){
     e.preventDefault();
   });
 }
+
 function remove_choose_elements(){
   // A couple things on /subreddits/mine
   $(".menuarea").remove();
@@ -722,6 +729,12 @@ function decodeEntities(encodedString) {
 }
 
 function getParameterByName(name, url) {
+    /*
+      For example, given
+        url  = "https://example.com?key=value"
+        name = "key"
+      This method returns "value"
+    */
     if (!url) {
       url = window.location.href;
     }
@@ -734,6 +747,7 @@ function getParameterByName(name, url) {
 }
 
 function url_to_a(url){
+  // Turns a URL into an <anchor> element
   var l = document.createElement("a");
   l.href = url;
   return l;
@@ -791,6 +805,8 @@ function reset_content_windows(){
       if (request.query == "reload"){
         window.location.reload();
         sendResponse({status: "thanks"});
+      } else if (request.query == "setColor"){
+        $("body.listing-page").css('background-color', request.color);
       } else {
         sendResponse({status: "unknown"});
       }
@@ -808,13 +824,16 @@ function reset_content_windows(){
     page = "subreddit";
   }
   // Ask the background if the app is enabled...
-  chrome.runtime.sendMessage({query: "checkEnabled", page: page}, function(response) {
+  chrome.runtime.sendMessage({query: "checkAll", page: page}, function(response) {
     if (response.app_enabled){
       console.debug("Extension Enabled.");
       init_func();
     } else{
       console.debug(response);
       console.debug("Extension Disabled.");
+    }
+    if (response.color){
+      $("body.listing-page").css('background-color', response.color);
     }
   });
 })();

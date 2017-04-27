@@ -9,7 +9,7 @@
       padding: 10px;
       text-align: center;
     }
-    button {
+    button.clickbutton {
       width: 180px;
       padding: 10px;
       margin: 10px;
@@ -19,9 +19,25 @@
       border-radius: 8px;
       font-size: 18px;
     }
-    button:hover {
+    button.clickbutton:hover {
       background-color: #bad4ff;
     }
+    
+    button.colorbutton {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+    }
+    button.colorbutton.red {
+      background-color: #CF6870;
+    }    
+    button.colorbutton.green {
+      background-color: #97D38D;
+    }    
+    button.colorbutton.blue {
+      background-color: #699D99;
+    }
+    
     h2 {
       text-align: center;
       font-size: 26px;
@@ -40,10 +56,15 @@
 </head>
 <body>
   <h2>Accessible Reddit</h2>
-  <button id="toggle">Disable</button>
-  <button id="toggleSpeech">Enable Speech</button>
-  <button id="changeSubreddit">Pick Subreddit</button>
-  <button id="tutorial">Tutorial</button>
+  <button class="clickbutton" id="toggle">Disable</button>
+  <button class="clickbutton" id="toggleSpeech">Enable Speech</button>
+  <button class="clickbutton" id="changeSubreddit">Pick Subreddit</button>
+  <button class="clickbutton" id="tutorial">Tutorial</button>
+  
+  <button class="colorbutton red" id="colorRed">&nbsp;</button>
+  <button class="colorbutton green" id="colorGreen">&nbsp;</button>
+  <button class="colorbutton blue" id="colorBlue">&nbsp;</button>
+  
   <img id="snoo" width="64px" height="auto" src="/img/snoo.png">
 </body>
 </html>

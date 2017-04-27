@@ -1,15 +1,24 @@
 window.app_enabled = true;
 window.speech_enabled = false;
+window.color = false;
 
 console.log("Init Background JS");
 update_from_local();
 
 // When the content script asks, tell them if we are enabled...
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+
     if (request.query == "checkAll"){
+      // Page asks for all the config...
+      if (window.app_enabled && typeof sender.tab !== "undefined"){
+        chrome.tabs.insertCSS(sender.tab.id, {file:"/css/content.css", runAt: "document_end"}, function(){});
+        if (request.page == "choose")
+          chrome.tabs.insertCSS(sender.tab.id, {file:"/css/choose.css", runAt: "document_end"}, function(){});
+      }
       sendResponse({
         app_enabled: window.app_enabled,
-        speech_enabled: window.speech_enabled
+        speech_enabled: window.speech_enabled,
+        color: window.color
       });
     }
     else if (request.query == "checkEnabled"){
@@ -20,7 +29,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       }
       sendResponse({app_enabled: window.app_enabled});  // don't allow this web page access
       console.log("Query done.  checkEnabled");
-    
+
     } else if (request.query == "checkSpeech") {
       sendResponse({speech_enabled: window.speech_enabled});
       console.log("Query done.  checkSpeech");
@@ -29,7 +38,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       window.app_enabled = request.enabled;
       update_local({accessibleReddit_enabled: request.enabled});
       sendResponse({app_enabled: window.app_enabled});
-      reload_tab();
+      send({query:"reload"});
       console.log("Query done.  toggleApp");
     
     } else if (request.query == "toggleSpeech") {
@@ -38,6 +47,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       sendResponse({speech_enabled: window.speech_enabled});
       console.log("Query done. toggleSpeech");
     
+    } else if (request.query == "setColor") {
+      console.log(request.color);
+      update_local({accessibleReddit_bgcolor: request.color});
+      window.color = request.color;
+      send({query:"setColor", color:request.color});
+      console.log("Query done.  setColor");
+    
     } else {
       console.log("Uknown query");
       sendResponse({error: "unknown query"});
@@ -45,9 +61,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     }
   });
 
-function reload_tab(){
+function send(payload){
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, {query: "reload"}, function(response){
+    chrome.tabs.sendMessage(tabs[0].id, payload, function(response){
       if (response)
         console.log("Content script got the message: " + response.status);
     });
