@@ -611,9 +611,6 @@ function init(){
   inheritsFrom(PostMenuContext, Context);
   inheritsFrom(CommentContext, Context);
   inheritsFrom(SubredditContext, Context);
-
-  if (window.acc_bgcolor)
-    $("body.listing-page").css('background-color', window.acc_bgcolor);
 }
 
 function subreddit_init(){
