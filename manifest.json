@@ -1,18 +1,18 @@
 {
   "manifest_version": 2,
-  "version": "2017.4.27",
+  "version": "2017.4.28",
   "name": "RedditAccessible",
   "description": "Add accessibility features for switch users and the visually impaired to reddit.com",
   "icons": { 
     "16": "/img/icon16.png",
     "48": "/img/icon48.png",
-    "128": "/img/icon128.png" 
+    "128":"/img/icon128.png" 
   },
   "content_scripts": [
     {
       "matches": [
         "https://www.reddit.com/",
-	"https://www.reddit.com/r/*",
+	      "https://www.reddit.com/r/*",
         "https://www.reddit.com/subreddits*"
       ],
       "js": [
@@ -37,12 +37,14 @@
     "activeTab",
     "storage",
     "https://www.reddit.com/r/*",
-    "https://www.reddit.com/subreddits*"
+    "https://www.reddit.com/subreddits*",
+    "https://www.reddit.com/"
   ],
   "externally_connectable": {
     "matches": [
       "https://www.reddit.com/r/*",
-      "https://www.reddit.com/subreddits*"
+      "https://www.reddit.com/subreddits*",
+      "https://www.reddit.com/"
     ]
   },
   "web_accessible_resources": [
