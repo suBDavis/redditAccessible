@@ -1,3 +1,5 @@
+const app_properties = ["accessibleReddit_enabled", "accessibleReddit_speechEnabled", "accessibleReddit_bgcolor"];
+
 window.app_enabled = true;
 window.speech_enabled = false;
 window.color = false;
@@ -19,8 +21,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       speech_enabled: window.speech_enabled,
       color: window.color
     });
-  }
-  else if (request.query == "checkEnabled"){
+  
+  } else if (request.query == "checkEnabled"){
     if (window.app_enabled){
       chrome.tabs.insertCSS(sender.tab.id, {file:"/css/content.css", runAt: "document_end"}, function(){});
       if (request.page == "choose")
@@ -78,7 +80,7 @@ function update_local(dict){
 
 // Used to persist settings through chrome sessions.
 function update_from_local(argument) {
-  chrome.storage.local.get(["accessibleReddit_enabled", "accessibleReddit_speechEnabled"], function(items){
+  chrome.storage.local.get(app_properties, function(items){
       console.log("Updating from local storage...");
       console.log(items);
       if (items.accessibleReddit_enabled != null)

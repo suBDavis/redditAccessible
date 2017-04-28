@@ -516,7 +516,6 @@ var PostBodyContext = function(parent, items, container){
     var paragraphs = $(container).find('p');
     console.log(paragraphs);
     if (paragraphs.length > 0){
-      console.log("Paragraphs found in body");
       var paragraph_items = [];
       for (var i = 0; i<paragraphs.length; i++){
         $(paragraphs[i]).attr('id', "acc_paragraph_"+i);
@@ -612,6 +611,9 @@ function init(){
   inheritsFrom(PostMenuContext, Context);
   inheritsFrom(CommentContext, Context);
   inheritsFrom(SubredditContext, Context);
+
+  if (window.acc_bgcolor)
+    $("body.listing-page").css('background-color', window.acc_bgcolor);
 }
 
 function subreddit_init(){
@@ -832,11 +834,12 @@ function reset_content_windows(){
     if (response.app_enabled){
       console.debug("Extension Enabled.");
       init_func();
-    } else{
+    } else {
       console.debug(response);
       console.debug("Extension Disabled.");
     }
     if (response.color){
+      window.acc_bgcolor = response.color;
       $("body.listing-page").css('background-color', response.color);
     }
   });
