@@ -830,14 +830,14 @@ function reset_content_windows(){
   chrome.runtime.sendMessage({query: "checkAll", page: page}, function(response) {
     if (response.app_enabled){
       console.debug("Extension Enabled.");
+      if (response.color){
+        window.acc_bgcolor = response.color;
+        $("body.listing-page").css('background-color', response.color);
+      }
       init_func();
     } else {
       console.debug(response);
       console.debug("Extension Disabled.");
-    }
-    if (response.color){
-      window.acc_bgcolor = response.color;
-      $("body.listing-page").css('background-color', response.color);
     }
   });
 })();

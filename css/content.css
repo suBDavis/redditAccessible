@@ -183,11 +183,6 @@ Custom Scrolling
   -webkit-border-radius:8px;
   border: 4px solid #5E5E5E;
 }
-::-webkit-scrollbar-thumb:hover{
-  height:50px;
-  /*background-color:#9f9f9f;*/
-  -webkit-border-radius:4px;
-}
 /*
 Except in the content, where the scrollbar inherits white..
 */
