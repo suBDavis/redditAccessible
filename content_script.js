@@ -391,15 +391,14 @@ var PostContext = function(parent, items, container){
         <button class='acc_menu_button' id='menuReadContent'>📕 View Post</button> \
         <button class='acc_menu_button' id='menuGoBack'>⬅ Go Back</button> \
         <button class='acc_menu_button' id='menuChangeSubreddit'>🌐 Change Subreddit</butto>\
-	";
+	  ";
       
     if(window.isloggedin){
       console.log("upvte buttons");
       menu_section += "\
        <button class='acc_menu_button' id='menuUpvote'>Upvote</button> \
-       <button class='acc_menu_button' id='menuUpvote'>Downvote</button> \
+       <button class='acc_menu_button' id='menuDownvote'>Downvote</button> \
        ";
-
     }
 
     menu_section += "</div>";
@@ -468,7 +467,7 @@ var PostMenuContext = function(parent, items, container){
   ];
 
   if(window.isloggedin){
-    items.concat([  
+    items = items.concat([
       new GenericItem($("#menuUpvote"), (event)=>{
         $.post();
       }),
@@ -477,6 +476,7 @@ var PostMenuContext = function(parent, items, container){
       })
     ]);
   }
+
   Context.call(this, parent, items, container);
 }
 
