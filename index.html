@@ -51,6 +51,19 @@
       width: 800px;
       margin: 0 auto;
     }
+    .videoWrapper {
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 */
+      padding-top: 25px;
+      height: 0;
+    }
+    .videoWrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
     @media screen and (max-width: 800px) {
       .content-container {
         width: 90%;
@@ -66,6 +79,11 @@
     <a class="button install" href="https://chrome.google.com/webstore/detail/redditaccessible/dlpdmegojijbaghnccgdcaahlmcoiipp?hl=en-US&gl=US">Install Reddit Accessible From Google Web Store</a>
     <a class="button source" href="https://github.com/suBDavis/redditAccessible">Download Source Code</a>
     <a class="button problem" href="https://github.com/suBDavis/redditAccessible/issues/new">Report a Problem</a>
+
+    <h1 id="tutorial">Tutorial</h1>
+    <div class="videoWrapper">
+      <iframe src="https://www.youtube.com/embed/KX0ctoGlfo0" frameborder="0" allowfullscreen></iframe>
+    </div>
     
     <h1 id="screenshots">Screenshots</h1>
     <img class="screenshot" src="https://i.imgur.com/FgbSedT.png" alt="Screenshot of reddit slash r slash space" width=100%/>
@@ -84,11 +102,6 @@
 
     <h1 id="unfluff-server">Unfluff Server</h1>
     <p>RedditAccessible uses a node.js backend for parsing and "unfluffing" articles shared on reddit.  This is done for safety and security - rather than loading an unknown DOM into the page, redditAccessible asks unfluff for the text-only version of an article. The code for this can be found at <a href="https://github.com/suBDavis/unfluff-server">subdavis/unfluff-server</a></p>
-    <pre>
-API Endpoints: 
-
-https://unfluff.subdavis.com:8443/unfluff?url=http://example.com
-  </pre>
     </ul>
   </div>
 </html>
