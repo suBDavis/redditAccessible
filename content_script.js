@@ -390,8 +390,21 @@ var PostContext = function(parent, items, container){
         <button class='acc_menu_button' id='menuReadComments'>🗨 Comments</button> \
         <button class='acc_menu_button' id='menuReadContent'>📕 View Post</button> \
         <button class='acc_menu_button' id='menuGoBack'>⬅ Go Back</button> \
-        <button class='acc_menu_button' id='menuChangeSubreddit'>🌐 Change Subreddit</button> \
-      </div>";
+        <button class='acc_menu_button' id='menuChangeSubreddit'>🌐 Change Subreddit</butto>\
+	";
+      
+    if(window.isloggedin){
+      console.log("upvte buttons");
+      menu_section += "\
+       <button class='acc_menu_button' id='menuUpvote'>Upvote</button> \
+       <button class='acc_menu_button' id='menuUpvote'>Downvote</button> \
+       ";
+
+    }
+
+    menu_section += "</div>";
+    console.log(menu_section);
+    
     $("#acc_wrapper").append(menu_section);
   })(get_subreddit());
 
@@ -453,6 +466,17 @@ var PostMenuContext = function(parent, items, container){
       window.location.href = CHANGE_REDDIT_URL;
     })
   ];
+
+  if(window.isloggedin){
+    items.concat([  
+      new GenericItem($("#menuUpvote"), (event)=>{
+        $.post();
+      }),
+      new GenericItem($("#menuDownvote"), (event)=>{
+        this._select_post_body_context();
+      })
+    ]);
+  }
   Context.call(this, parent, items, container);
 }
 
@@ -814,7 +838,8 @@ function reset_content_windows(){
         sendResponse({status: "unknown"});
       }
   });
-
+  window.isloggedin = $("span.userkarma").length == 1;
+  console.log(window.isloggedin);
   // Check what sort of page we are on.
   var init_func;
   var page;
