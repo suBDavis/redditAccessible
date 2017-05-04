@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "2017.4.28",
+  "version": "2017.5.03",
   "name": "RedditAccessible",
   "description": "Add accessibility features for switch users and the visually impaired to reddit.com",
   "icons": { 
